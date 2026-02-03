@@ -27,6 +27,8 @@ enum {
 	CMD_LOCK_SWD,
 	CMD_VI,
 	CMD_SW,
+	CMD_IN,
+	CMD_CTRL,
 	CMD_LAST,
 	CMD_NO_MATCH = 255,
 };
@@ -46,7 +48,9 @@ static const TestCommandTable testCommandTable[] = {
 	[4]={ .cmdIdx=CMD_LOCK_SWD, 	"LKS",		.cmdStrMaxLen=3, 	"<lks-0000-0" 		},
 	[5]={ .cmdIdx=CMD_VI, 			"VI",		.cmdStrMaxLen=2, 	"" 					},
 	[6]={ .cmdIdx=CMD_SW, 			"SW",		.cmdStrMaxLen=7, 	"" 					},
-	[7]={ .cmdIdx=CMD_LAST, 		"", 		.cmdStrMaxLen=0, 	"" 					},
+	[7]={ .cmdIdx=CMD_IN, 			"IN",		.cmdStrMaxLen=2, 	"" 					},
+	[8]={ .cmdIdx=CMD_CTRL, 		"CTRL",		.cmdStrMaxLen=14, 	"" 					},
+	[9]={ .cmdIdx=CMD_LAST, 		"", 		.cmdStrMaxLen=0, 	"" 					},
 };
 
 static const char respErrorStr[] = "<ERROR>";
@@ -225,6 +229,47 @@ void testHarnessService(void)
 						HAL_GPIO_ReadPin(PSEN_ORION),
 						HAL_GPIO_ReadPin(USBC_HPEN),
 						HAL_GPIO_ReadPin(USBC_LPEN));
+				break;
+
+			case CMD_IN:
+				sprintf(&testResponse[0],"USBC_LPOC \t= %d\nREMOVAL_DET_L \t= %d",
+						HAL_GPIO_ReadPin(USBC_LPOC),
+						HAL_GPIO_ReadPin(REMOVAL_DET_L));
+				break;
+
+			case CMD_CTRL:
+				if (cmdlen == 14)
+				{
+					if (testCommand[5] == '1') HAL_GPIO_WritePin(AID_PU_EN_L, GPIO_PIN_SET);
+					else if (testCommand[5] == '0') HAL_GPIO_WritePin(AID_PU_EN_L, GPIO_PIN_RESET);
+					if (testCommand[6] == '1') HAL_GPIO_WritePin(AID_PD_EN, GPIO_PIN_SET);
+					else if (testCommand[6] == '0') HAL_GPIO_WritePin(AID_PD_EN, GPIO_PIN_RESET);
+					if (testCommand[7] == '1') HAL_GPIO_WritePin(LED_RED, GPIO_PIN_SET);
+					else if (testCommand[7] == '0') HAL_GPIO_WritePin(LED_RED, GPIO_PIN_RESET);
+					if (testCommand[8] == '1') HAL_GPIO_WritePin(LED_GRN, GPIO_PIN_SET);
+					else if (testCommand[8] == '0') HAL_GPIO_WritePin(LED_GRN, GPIO_PIN_RESET);
+					if (testCommand[9] == '1') HAL_GPIO_WritePin(LED_BLU, GPIO_PIN_SET);
+					else if (testCommand[9] == '0') HAL_GPIO_WritePin(LED_BLU, GPIO_PIN_RESET);
+					if (testCommand[10] == '1') HAL_GPIO_WritePin(INA_EN, GPIO_PIN_SET);
+					else if (testCommand[10] == '0') HAL_GPIO_WritePin(INA_EN, GPIO_PIN_RESET);
+					if (testCommand[11] == '1') HAL_GPIO_WritePin(DISCH_ORION, GPIO_PIN_SET);
+					else if (testCommand[11] == '0') HAL_GPIO_WritePin(DISCH_ORION, GPIO_PIN_RESET);
+					if (testCommand[12] == '1') HAL_GPIO_WritePin(MAGIC_PD_DIS, GPIO_PIN_SET);
+					else if (testCommand[12] == '0') HAL_GPIO_WritePin(MAGIC_PD_DIS, GPIO_PIN_RESET);
+					if (testCommand[13] == '1') HAL_GPIO_WritePin(ORION_DATA_ENABLE, GPIO_PIN_SET);
+					else if (testCommand[13] == '0') HAL_GPIO_WritePin(ORION_DATA_ENABLE, GPIO_PIN_RESET);
+				}
+				sprintf(&testResponse[0],
+						"AID_PU_EN_L \t= %d\nAID_PD_EN \t= %d\nLED_RGB \t= %d%d%d\nINA_EN \t= %d\nDISCH_ORION \t= %d\nMAGIC_PD_DIS \t= %d\nORION_DATA_ENABLE \t= %d",
+						HAL_GPIO_ReadPin(AID_PU_EN_L),
+						HAL_GPIO_ReadPin(AID_PD_EN),
+						HAL_GPIO_ReadPin(LED_RED),
+						HAL_GPIO_ReadPin(LED_GRN),
+						HAL_GPIO_ReadPin(LED_BLU),
+						HAL_GPIO_ReadPin(INA_EN),
+						HAL_GPIO_ReadPin(DISCH_ORION),
+						HAL_GPIO_ReadPin(MAGIC_PD_DIS),
+						HAL_GPIO_ReadPin(ORION_DATA_ENABLE));
 				break;
 
 			default:
