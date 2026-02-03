@@ -1,0 +1,12 @@
+.metadata/
+BellaApp/Debug/
+BellaApp/.settings/
+BellaApp/BellaApp.cfg
+BellaApp/BellaApp.launch
+.DS_Store
+*.o
+*.cyclo
+*.d
+*.su
+*.mk
+*.elf
