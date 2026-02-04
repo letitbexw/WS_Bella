@@ -9,6 +9,7 @@
 #define BSP_BSP_H_
 
 #include "main.h"
+#include "orion.h"
 #include <stdbool.h>
 
 
@@ -42,8 +43,24 @@
 #define COMP_ORION_OUT		GPIOB, GPIO_PIN_10
 
 
+// USART4 - Debug
+#define DEBUG_UART_BASE_PTR           	USART4
+#define DEBUG_UART_IRQn                 USART3_4_5_6_LPUART1_IRQn
+#define DEBUG_UART_RATE             	230400
+#define DEBUG_UART_IRQ_PRIORITY     	3
+
+// USART3 - Orion
+#define ORION_UART_BASE_PTR           	USART3
+#define ORION_UART_IRQn                 USART3_4_5_6_LPUART1_IRQn
+#define ORION_UART_RATE					1000000
+#define ORION_UART_IRQ_PRIORITY			1
+
+
 extern uint8_t hwVersion;
 
+
+void initGPIO(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint32_t Mode, uint32_t Pull, GPIO_PinState PinState, uint32_t Alternate);
+void bspInit(void);
 
 static __INLINE bool bspReadoutProtectionIsSet(void)
 {
@@ -51,8 +68,37 @@ static __INLINE bool bspReadoutProtectionIsSet(void)
 	return false;
 }
 
-void initGPIO(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint32_t Mode, uint32_t Pull, GPIO_PinState PinState, uint32_t Alternate);
-void bspInit(void);
+#define bspOrionDataAboveRMThreshold()    (HAL_GPIO_ReadPin(REMOVAL_DET_L) == GPIO_PIN_RESET)
+#define bspOrionDataBelowRxThreshold()    (HAL_GPIO_ReadPin(ACC_AID_RX) == GPIO_PIN_RESET)
+
+// board power source
+typedef enum {
+	bspOrionPowerSourceNone = 0,
+	bspOrionPowerSourceBattery = 2,
+	bspOrionPowerSourceUSB,
+} bspOrionPowerSource_t;
+
+typedef enum {
+	bspOrionThreshHigh = 0,
+	bspOrionThreshMed,
+	bspOrionThreshLow,
+} bspOrionThresh_t;
+
+void bspSetDataEnable(bool enable);
+void bspSetAccPower(bool enable, bool highPower);
+bool bspGetOrionPowerIsHighPowerIn(void);
+void bspMozartPower(bool enable);
+void bspConfigureWakeEvents(void);
+void bspSystemStop(void);
+void bspOrionDetach(bool reset);
+
+void bspSetOrionPull(orionLineState_t state);
+void bspSetOrionPower(orionPowerSource_t source, uint8_t highPower);
+uint8_t bspPowerAvailable(orionPowerSource_t power);
+uint32_t bspGetOrionVbusVoltage(void);
+void bspSetOrionThreshold(bspOrionThresh_t threshold);
+uint8_t bspSinkEnable(uint8_t enable);
+void bspEnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry);
 
 
 #endif /* BSP_BSP_H_ */

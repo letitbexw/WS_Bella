@@ -8,6 +8,7 @@
 
 #include "config.h"
 #include "utils.h"
+#include <ctype.h>
 
 const unsigned char dec2hex[] = "0123456789ABCDEF";
 
@@ -84,11 +85,11 @@ uint8_t atob_8(char* str)
 	uint8_t ret = 0;
 
 	// Try to convert the first byte
-	if (charToByte(str[0], &ret) == TRUE)
+	if (charToByte(str[0], &ret) == true)
 	{
 		// Try to convert the second byte
 		uint8_t byte;
-		if (charToByte(str[1], &byte) == TRUE)
+		if (charToByte(str[1], &byte) == true)
 		{
 			ret = ret * 16 + byte;
 		}
@@ -151,13 +152,13 @@ bool utilHex2Byte(const uint8_t * hexString, uint8_t* byte)
 		dataByte |= *hexString - 'A' + 10;
 	}
 	else {
-		retval = FALSE;
+		retval = false;
 	}
 
 	hexString++;
 	dataByte <<= 4;
 
-	if (retval == TRUE) {
+	if (retval == true) {
 		if ((*hexString >= '0')&&(*hexString <= '9')) {
 			dataByte |= *hexString - '0';
 		}
@@ -165,7 +166,7 @@ bool utilHex2Byte(const uint8_t * hexString, uint8_t* byte)
 			dataByte |= *hexString - 'A' + 10;
 		}
 		else {
-			retval = FALSE;
+			retval = false;
 		}
 	}
 
@@ -183,7 +184,7 @@ bool utilHex2Byte(const uint8_t * hexString, uint8_t* byte)
 // Convert a character to a byte, and return if we were successful
 bool charToByte(char ch, uint8_t* byte)
 {
-	bool ret = TRUE;
+	bool ret = true;
 
 	// Try to convert the character
 	if ((ch >= '0') && (ch <= '9'))
@@ -201,7 +202,7 @@ bool charToByte(char ch, uint8_t* byte)
 	else
 	{
 		*byte = 0;
-		ret = FALSE;
+		ret = false;
 	}
 
 	// Return if we were successful

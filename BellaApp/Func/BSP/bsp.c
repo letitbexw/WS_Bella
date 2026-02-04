@@ -6,8 +6,13 @@
  */
 
 
+#include "config.h"
+#include "main.h"
 #include "bsp.h"
 #include "i2c.h"
+#include "timers.h"
+#include "adc.h"
+#include "idbus_uart.h"
 
 
 uint8_t hwVersion;
@@ -61,7 +66,7 @@ void initGPIO(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint32_t Mode, uint32_t Pu
 	GPIO_InitStruct.Pin 		= GPIO_Pin;
 	GPIO_InitStruct.Mode 		= Mode;
 	GPIO_InitStruct.Pull 		= Pull;
-	GPIO_InitStruct.Speed 	 	= GPIO_SPEED_FREQ_LOW;
+	GPIO_InitStruct.Speed 	 	= GPIO_SPEED_FREQ_HIGH;
 	GPIO_InitStruct.Alternate 	= Alternate;
 	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
 }
@@ -116,3 +121,6 @@ void bspInit(void)
 	WriteInaReg(REG_CONFIG, 0x299F);				// Set shunt range to be +-80mV,
 	WriteInaReg(REG_CALIBRATION, 25600);
 }
+
+
+

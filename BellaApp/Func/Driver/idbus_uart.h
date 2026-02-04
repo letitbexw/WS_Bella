@@ -28,9 +28,9 @@ extern volatile uint32_t idbusTimeOfLastActivityOnTheBus;
 
 //Function prototypes
 
-void idbusUartInit(UART_HandleTypeDef *uartHandle, uint32_t baud);
-void idbusMspInit(UART_HandleTypeDef *huart);
-void idbusMspDeInit(UART_HandleTypeDef *huart);
+void idbusUartInit(UART_HandleTypeDef *uartHandle);
+void idbusMspInit(void);
+void idbusMspDeInit(void);
 
 void idbusCaptureIDIO(uint8_t enable);
 

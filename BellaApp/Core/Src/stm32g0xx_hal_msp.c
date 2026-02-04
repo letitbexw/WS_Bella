@@ -19,6 +19,7 @@
 
 #include "bsp.h"
 #include "debug_uart.h"
+#include "idbus_uart.h"
 
 void HAL_MspInit(void)
 {
@@ -118,37 +119,14 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 
 void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 {
-	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-	if(huart->Instance==USART3)
-	{
-		/** Initializes the peripherals clocks */
-		PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART3;
-		PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_SYSCLK;
-		if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) { Error_Handler(); }
-
-		/* Peripheral clock enable */
-		__HAL_RCC_USART3_CLK_ENABLE();
-		__HAL_RCC_GPIOB_CLK_ENABLE();
-		initGPIO(USART_ACC_AID, GPIO_MODE_AF_PP, GPIO_NOPULL, 0, GPIO_AF4_USART3); /* PB8/PB9,  ACC_AID_TX/ACC_AID_RX */
-	}
-	else if(huart->Instance==USART4)
-	{
-		uartDebugMspInit();
-	}
+	if(huart->Instance==USART3) 		{ idbusMspInit(); }
+	else if(huart->Instance==USART4) 	{ uartDebugMspInit(); }
 }
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 {
-	if(huart->Instance==USART3)
-	{
-		/* Peripheral clock disable */
-		__HAL_RCC_USART3_CLK_DISABLE();
-		HAL_GPIO_DeInit(USART_ACC_AID);
-	}
-	else if(huart->Instance==USART4)
-	{
-		uartDebugMspDeInit();
-	}
+	if(huart->Instance==USART3)			{ idbusMspDeInit(); }
+	else if(huart->Instance==USART4) 	{ uartDebugMspDeInit(); }
 }
 
 

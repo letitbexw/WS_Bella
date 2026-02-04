@@ -16,5 +16,6 @@ void tmrDelay_ms( uint32_t timeMs );
 void tmrDelay_us(uint16_t timeUs);
 uint32_t GetTickCount(void);
 
+typedef uint32_t timer_t;
 
 #endif /* DRIVER_TIMERS_H_ */

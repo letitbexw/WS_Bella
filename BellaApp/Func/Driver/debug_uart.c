@@ -34,7 +34,7 @@ void uartDebugInit(void)
 	HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, DEBUG_UART_IRQ_PRIORITY, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
 
-	huartDbg.Instance 						= USART4;
+	huartDbg.Instance 						= DEBUG_UART_BASE_PTR;
 	huartDbg.Init.BaudRate 					= DEBUG_UART_RATE;
 	huartDbg.Init.WordLength 				= UART_WORDLENGTH_8B;
 	huartDbg.Init.StopBits 					= UART_STOPBITS_1;
@@ -48,8 +48,8 @@ void uartDebugInit(void)
 	if (HAL_UART_Init(&huartDbg) != HAL_OK) { Error_Handler(); }
 
 	/* USART4 interrupt Init */
-	HAL_NVIC_SetPriority(USART3_4_5_6_LPUART1_IRQn, DEBUG_UART_IRQ_PRIORITY, 0);
-	HAL_NVIC_EnableIRQ(USART3_4_5_6_LPUART1_IRQn);
+	HAL_NVIC_SetPriority(DEBUG_UART_IRQn, DEBUG_UART_IRQ_PRIORITY, 0);
+	HAL_NVIC_EnableIRQ(DEBUG_UART_IRQn);
 
 	fifo8Init(&uartTxFifo, hostTxBuf, CNFG_TEST_UART_TX_BUF_SIZE);
 	fifo8Init(&uartRxFifo, hostRxBuf, CNFG_TEST_UART_RX_BUF_SIZE);
