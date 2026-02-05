@@ -13,6 +13,7 @@
 #include "timers.h"
 #include "adc.h"
 #include "i2c.h"
+#include "orion.h"
 
 
 #define TEST_HARNESS_MAX_CMD_SIZE       28
@@ -29,6 +30,7 @@ enum {
 	CMD_SW,
 	CMD_IN,
 	CMD_CTRL,
+	CMD_ORI,
 	CMD_LAST,
 	CMD_NO_MATCH = 255,
 };
@@ -50,7 +52,8 @@ static const TestCommandTable testCommandTable[] = {
 	[6]={ .cmdIdx=CMD_SW, 			"SW",		.cmdStrMaxLen=7, 	"" 					},
 	[7]={ .cmdIdx=CMD_IN, 			"IN",		.cmdStrMaxLen=2, 	"" 					},
 	[8]={ .cmdIdx=CMD_CTRL, 		"CTRL",		.cmdStrMaxLen=14, 	"" 					},
-	[9]={ .cmdIdx=CMD_LAST, 		"", 		.cmdStrMaxLen=0, 	"" 					},
+	[9]={ .cmdIdx=CMD_ORI, 			"ORI",		.cmdStrMaxLen=3, 	"" 					},
+	[10]={ .cmdIdx=CMD_LAST, 		"", 		.cmdStrMaxLen=0, 	"" 					},
 };
 
 static const char respErrorStr[] = "<ERROR>";
@@ -204,7 +207,7 @@ void testHarnessService(void)
 
 			case CMD_VI:
 				sprintf(&testResponse[0],
-						"VBUS0 \t= %d mV\nVB0_GO \t= %d mV\nIBUS0 \t= %d mA\nVori \t= %d mV",
+						"VBUS0 \t= %d mV\nVB0_GO \t= %d mV\nIBUS0 \t= %d mA\nVORION \t= %d mV",
 						(int)ReadAdcVBUS(PORT0),
 						ReadInaVoltage(),
 						ReadInaCurrent(),
@@ -260,7 +263,7 @@ void testHarnessService(void)
 					else if (testCommand[13] == '0') HAL_GPIO_WritePin(ORION_DATA_ENABLE, GPIO_PIN_RESET);
 				}
 				sprintf(&testResponse[0],
-						"AID_PU_EN_L \t= %d\nAID_PD_EN \t= %d\nLED_RGB \t= %d%d%d\nINA_EN \t= %d\nDISCH_ORION \t= %d\nMAGIC_PD_DIS \t= %d\nORION_DATA_ENABLE \t= %d",
+						"AID_PU_EN_L \t= %d\nAID_PD_EN \t= %d\nLED_RGB \t= %d%d%d\nINA_EN \t\t= %d\nDISCH_ORION \t= %d\nMAGIC_PD_DIS \t= %d\nORION_DATA_ENABLE = %d",
 						HAL_GPIO_ReadPin(AID_PU_EN_L),
 						HAL_GPIO_ReadPin(AID_PD_EN),
 						HAL_GPIO_ReadPin(LED_RED),
@@ -270,6 +273,14 @@ void testHarnessService(void)
 						HAL_GPIO_ReadPin(DISCH_ORION),
 						HAL_GPIO_ReadPin(MAGIC_PD_DIS),
 						HAL_GPIO_ReadPin(ORION_DATA_ENABLE));
+				break;
+
+			case CMD_ORI:
+				if (getOrionDataAboveRMThreshold()) 		{ sprintf(&testResponse[0], "data > 2.4V\nVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
+				else {
+					if (getOrionDataAboveRxThreshold()) 	{ sprintf(&testResponse[0], "1.5V < data < 2.4V\nVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
+					else 									{ sprintf(&testResponse[0], "data < 1.5V\nVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
+				}
 				break;
 
 			default:

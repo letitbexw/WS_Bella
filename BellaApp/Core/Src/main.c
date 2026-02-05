@@ -23,6 +23,7 @@
 #include "idio.h"
 #include "test.h"
 #include "adc.h"
+#include "wdt.h"
 #include "usbpd.h"
 #include "usb_device.h"
 #include "target.h"
@@ -58,6 +59,8 @@ int main(void)
 
 //  MX_USBPD_Init();
 
+	wdtInit();
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -65,6 +68,7 @@ int main(void)
     /* USER CODE END WHILE */
     //USBPD_DPM_Run();
     testHarnessService();
+    wdtService();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

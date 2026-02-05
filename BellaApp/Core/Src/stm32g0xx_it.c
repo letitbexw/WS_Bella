@@ -19,12 +19,14 @@
 #include "bsp.h"
 #include "stm32g0xx_it.h"
 #include "debug_uart.h"
+#include "idbus_uart.h"
 #include "usbpd.h"
 
 
 extern PCD_HandleTypeDef hpcd_USB_DRD_FS;
 extern UART_HandleTypeDef huartDbg;
 extern DMA_HandleTypeDef hdma_Dbg_tx;
+extern UART_HandleTypeDef idbusUartHandle;
 
 /******************************************************************************/
 /*           Cortex-M0+ Processor Interruption and Exception Handlers          */
@@ -53,27 +55,28 @@ void SysTick_Handler(void)
 void USART3_4_5_6_LPUART1_IRQHandler(void)
 {
 	HAL_UART_IRQHandler(&huartDbg);
+	idbusUartIrqHandler(&idbusUartHandle);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (huart->Instance == USART4)
+	if (huart->Instance == DEBUG_UART_BASE_PTR)
 	{
 		uartDebugTxDmaComplete();
 	}
-	else if (huart->Instance == USART3)
+	else if (huart->Instance == ORION_UART_BASE_PTR)
 	{
-		//uartIdbusTxComplete();
+//		uartIdbusTxComplete();
 	}
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (huart->Instance == USART4)
+	if (huart->Instance == DEBUG_UART_BASE_PTR)
 	{
 		uartDebugRxComplete();
 	}
-	else if (huart->Instance == USART3)
+	else if (huart->Instance == ORION_UART_BASE_PTR)
 	{
 
 	}

@@ -594,7 +594,7 @@ void idioService(void)
 void idioInit(void)
 {
 	idioEnabled = false;
-	ifOps = &idioIfOps;
+	ifOps 		= &idioIfOps;
 	ifOps->init(ifOps->uartHandle);
 #ifdef CNFG_AID_HAS_BULK_DATA
 	idioBulkDataInit();
