@@ -90,8 +90,8 @@ uint32_t orionStatistics[orionErrorCount];
   */
 void setOrionPull(orionLineState_t state)
 {
-  //DEBUG_PRINT_ORION("set pull, s=%d", state);
-  bspSetOrionPull(state);
+	//DEBUG_PRINT_ORION("set pull, s=%d", state);
+	bspSetOrionPull(state);
 }
 
 /**
@@ -102,19 +102,18 @@ void setOrionPull(orionLineState_t state)
   */
 static void setOrionPower(orionPowerSource_t source, uint8_t highPower)
 {
-  //DEBUG_PRINT_ORION("set source, s=%d, hp=%d", source, highPower);
-  if ((source == orionPowerSourceEnable)       &&
-      (idioBulkDataIsEnabled())                &&
-      (!mainGetAuthState()))
-  {
-    DEBUG_PRINT_ORION("\033[33mOverride: No power in\033[0m");
-    bspSetOrionPower(orionPowerSourceNone, 0);
-  }
-  else
-  {
-    DEBUG_PRINT_ORION("SetOrionPower %s", source == orionPowerSourceEnable ? "enable" : "none");
-    bspSetOrionPower(source, highPower);
-  }
+	//DEBUG_PRINT_ORION("set source, s=%d, hp=%d", source, highPower);
+	if ((source == orionPowerSourceEnable) && (idioBulkDataIsEnabled()) && (!mainGetAuthState()))
+	{
+		DEBUG_PRINT_ORION("\033[33mOverride: No power in\033[0m");
+		bspSetOrionPower(orionPowerSourceNone, 0);
+	}
+	else
+	{
+		// if target is orionPowerSourceDrain or orionPowerSourceNone, execute directly
+		DEBUG_PRINT_ORION("SetOrionPower %s", source == orionPowerSourceEnable ? "enable" : "none");
+		bspSetOrionPower(source, highPower);
+	}
 }
 
 
@@ -125,11 +124,10 @@ static void setOrionPower(orionPowerSource_t source, uint8_t highPower)
   */
 uint8_t getOrionDataAboveRMThreshold(void)
 {
-  uint8_t state;
-  uint16_t start = HF_TIMER->CNT;
-  while((state = bspOrionDataAboveRMThreshold()) &&
-    ((uint16_t)(HF_TIMER->CNT - start) <= ORION_DISCONNECT_DEBOUNCE_US));
-  return state;
+	uint8_t state;
+	uint16_t start = HF_TIMER->CNT;
+	while((state = bspOrionDataAboveRMThreshold()) && ((uint16_t)(HF_TIMER->CNT - start) <= ORION_DISCONNECT_DEBOUNCE_US));
+	return state;
 }
 
 
@@ -140,11 +138,10 @@ uint8_t getOrionDataAboveRMThreshold(void)
   */
 uint8_t getOrionDataAboveRxThreshold(void)
 {
-  uint8_t state;
-  uint16_t start = HF_TIMER->CNT;
-  while((state = bspOrionDataBelowRxThreshold()) &&
-    ((uint16_t)(HF_TIMER->CNT - start) <= ORION_DISCONNECT_DEBOUNCE_US));
-  return !state;
+	uint8_t state;
+	uint16_t start = HF_TIMER->CNT;
+	while((state = bspOrionDataBelowRxThreshold()) && ((uint16_t)(HF_TIMER->CNT - start) <= ORION_DISCONNECT_DEBOUNCE_US));
+	return !state;
 }
 
 
@@ -155,11 +152,11 @@ uint8_t getOrionDataAboveRxThreshold(void)
   */
 uint8_t getOrionDataInRange(void)
 {
-  uint8_t state;
-  uint16_t start = HF_TIMER->CNT;
-  while((state = (!bspOrionDataBelowRxThreshold() && !bspOrionDataAboveRMThreshold())) &&
-    ((uint16_t)(HF_TIMER->CNT - start) <= ORION_DISCONNECT_DEBOUNCE_US));
-  return state;
+	uint8_t state;
+	uint16_t start = HF_TIMER->CNT;
+	// data is between 1.5V and 2.4V
+	while((state = (!bspOrionDataBelowRxThreshold() && !bspOrionDataAboveRMThreshold())) && ((uint16_t)(HF_TIMER->CNT - start) <= ORION_DISCONNECT_DEBOUNCE_US));
+	return state;
 }
 
 
@@ -172,27 +169,15 @@ uint8_t getOrionDataInRange(void)
   */
 uint8_t getOrionFilteredDataValid(void)
 {
-  static uint8_t filter = 9;
+	static uint8_t filter = 9;
 
-  if (getOrionDataAboveRMThreshold())
-  {
-    filter = 0;
-  }
-  else
-  {
-    if (getOrionDataAboveRxThreshold())
-    {
-      if (filter < 16)
-        filter++;
-    }
-    else
-    {
-      if (filter > 0)
-        filter--;
-    }
-  }
-  DEBUG_PRINT_ORION("Rx f=%d", filter);
-  return (filter > 8);
+	if (getOrionDataAboveRMThreshold()) 		{ filter = 0; }					// data > 2.4V
+	else {
+		if (getOrionDataAboveRxThreshold()) 	{ if (filter < 16) filter++; }	// 1.5V < data < 2.4V
+		else 									{ if (filter > 0) filter--; }	// data < 1.5V
+	}
+	DEBUG_PRINT_ORION("Rx f=%d", filter);
+	return (filter > 8);
 }
 
 
@@ -203,37 +188,40 @@ uint8_t getOrionFilteredDataValid(void)
   */
 static uint8_t getOrionVbusAboveThreshold(void)
 {
-  uint32_t voltage;
-  uint8_t powerOk = false;
-  uint8_t oldOrionPowerPresent = orionPowerPresent;
+	uint32_t voltage;
+	uint8_t powerOk 				= false;
+	uint8_t oldOrionPowerPresent 	= orionPowerPresent;
 
-  voltage = bspGetOrionVbusVoltage();
+	voltage = bspGetOrionVbusVoltage();
 
-  if (!orionPowerPresent && (voltage > ORION_POWER_PRESENT_THRESHOLD))
-  {
-    orionPowerPresent = true;
-    powerOk = true;
-  }
-  else if (orionPowerPresent && (voltage < ORION_POWER_REMOVAL_THRESHOLD))
-  {
-    orionPowerPresent = false;
-    powerOk = false;
-  }
-  else
-  {
-    powerOk = orionPowerPresent;
-  }
+	if (!orionPowerPresent && (voltage > ORION_POWER_PRESENT_THRESHOLD))
+	{
+		// previously no, now yes
+		orionPowerPresent = true;
+		powerOk = true;
+	}
+	else if (orionPowerPresent && (voltage < ORION_POWER_REMOVAL_THRESHOLD))
+	{
+		// previous yes, now no
+		orionPowerPresent = false;
+		powerOk = false;
+	}
+	else
+	{
+		// no change
+		powerOk = orionPowerPresent;
+	}
 
-  if (ABS_DIFF(orionVbusVoltage,voltage) > 500)
-  {
-    DEBUG_PRINT_ORION("Vbus change to %dmV", (unsigned int)voltage);
-  }
-  if (oldOrionPowerPresent != orionPowerPresent)
-  {
-    DEBUG_PRINT_ORION("Vbus %spresent", orionPowerPresent ? "" : "not ");
-  }
-  orionVbusVoltage = voltage;
-  return powerOk;
+	if (ABS_DIFF(orionVbusVoltage,voltage) > 500)
+	{
+		DEBUG_PRINT_ORION("Vbus change to %dmV", (unsigned int)voltage);
+	}
+	if (oldOrionPowerPresent != orionPowerPresent)
+	{
+		DEBUG_PRINT_ORION("Vbus %spresent", orionPowerPresent ? "" : "not ");
+	}
+	orionVbusVoltage = voltage;
+	return powerOk;
 }
 
 
@@ -244,22 +232,22 @@ static uint8_t getOrionVbusAboveThreshold(void)
   */
 static uint8_t getOrionVbusDischarged(void)
 {
-  uint32_t voltage;
-  uint8_t powerFail = false;
+	uint32_t voltage;
+	uint8_t powerFail = false;
 
-  voltage = bspGetOrionVbusVoltage();
+	voltage = bspGetOrionVbusVoltage();
 
-  if (voltage < ORION_POWER_DISCHARGE_THRESHOLD)
-  {
-    DEBUG_PRINT_ORION("Vbus discharged");
-    powerFail = true;
-  }
+	if (voltage < ORION_POWER_DISCHARGE_THRESHOLD)
+	{
+		DEBUG_PRINT_ORION("Vbus discharged");
+		powerFail = true;
+	}
 
-  if (ABS_DIFF(orionVbusVoltage,voltage) > 500)
-  {
-    DEBUG_PRINT_ORION("Vbus change to %dmV", (unsigned int)voltage);
-  }
-  return powerFail;
+	if (ABS_DIFF(orionVbusVoltage,voltage) > 500)
+	{
+		DEBUG_PRINT_ORION("Vbus change to %dmV", (unsigned int)voltage);
+	}
+	return powerFail;
 }
 
 
@@ -270,10 +258,7 @@ static uint8_t getOrionVbusDischarged(void)
   * @param  None
   * @retval current state
   */
-orionState_t getOrionState(void)
-{
-  return orionState;
-}
+orionState_t getOrionState(void) { return orionState; }
 
 
 /**
@@ -283,42 +268,42 @@ orionState_t getOrionState(void)
   */
 orionConnectState_t orionIsConnected(orionState_t state)
 {
-  orionConnectState_t connected;
-  switch (state)
-  {
-    case orionStateProvider:
-    case orionStateConsumer:
-    case orionStateProvProvider:
-    case orionStateProvConsumer:
-    {
-      connected = orionConnected;
-      break;
-    }
-    case orionStatePingLow:
-    case orionStatePingHigh:
-    case orionStateConsProvSetup:
-    case orionStateConsProvSwap:
-    case orionStateProvConsSetup:
-    case orionStateProvConsDrain:
-    case orionStateProvConsSwap:
-    {
-      connected = orionConnecting;
-      break;
-    }
-#ifdef CNFG_ATS_SUPPORT
-    case orionStateMonitor:
-    {
-      connected = orionConnectState;
-      break;
-    }
-#endif
-    default:
-    {
-      connected = orionDisconnected;
-      break;
-    }
-  }
-  return connected;
+	orionConnectState_t connected;
+	switch (state)
+	{
+		case orionStateProvider:
+		case orionStateConsumer:
+		case orionStateProvProvider:
+		case orionStateProvConsumer:
+		{
+			connected = orionConnected;
+			break;
+		}
+		case orionStatePingLow:
+		case orionStatePingHigh:
+		case orionStateConsProvSetup:
+		case orionStateConsProvSwap:
+		case orionStateProvConsSetup:
+		case orionStateProvConsDrain:
+		case orionStateProvConsSwap:
+		{
+			connected = orionConnecting;
+			break;
+		}
+	#ifdef CNFG_ATS_SUPPORT
+		case orionStateMonitor:
+		{
+			connected = orionConnectState;
+			break;
+		}
+	#endif
+		default:
+		{
+			connected = orionDisconnected;
+			break;
+		}
+	}
+	return connected;
 }
 
 
@@ -329,25 +314,25 @@ orionConnectState_t orionIsConnected(orionState_t state)
   */
 orionConnectAsState_t getOrionConnectedAs(void)
 {
-  orionConnectAsState_t connected;
-  switch (orionState)
-  {
-    case orionStateProvider:
-    {
-      connected = orionConnectedProvider;
-      break;
-    }
-    case orionStateConsumer:
-    {
-      connected = orionConnectedConsumer;
-      break;
-    }
-    default:
-    {
-      connected = orionNotConnected;
-      break;
-    }
-  }
+	orionConnectAsState_t connected;
+	switch (orionState)
+	{
+   		case orionStateProvider:
+   		{
+			connected = orionConnectedProvider;
+			break;
+   		}
+   		case orionStateConsumer:
+   		{
+   			connected = orionConnectedConsumer;
+   			break;
+   		}
+   		default:
+   		{
+   			connected = orionNotConnected;
+   			break;
+   		}
+	}
   return connected;
 }
 
@@ -357,50 +342,44 @@ orionConnectAsState_t getOrionConnectedAs(void)
   * @param  None
   * @retval current state
   */
-uint8_t getOrionConnected(void)
-{
-  return (uint8_t)orionIsConnected(orionState);
-}
+uint8_t getOrionConnected(void) { return (uint8_t)orionIsConnected(orionState); }
 
 
 void pushOrionConnectionState(void)
 {
 #ifdef CNFG_ATS_SUPPORT
-  uint8_t state = getOrionConnected();
-  atfReportAccessoryConnectionState(&state);
+	uint8_t state = getOrionConnected();
+	atfReportAccessoryConnectionState(&state);
 #endif
 }
 
 #ifdef CNFG_DEBUG_ORION_ENABLED
 static const char* stateName[] =
 {
-  "Reset",
-  "Soft Reset",
-  "Suspend",
-  "Ping Low",
-  "Ping High",
-  "Prov Provider",
-  "Provider High",
-  "Wait Consumer",
-  "Prov Consumer",
-  "Consumer",
-  "Setup Cons -> Prov",
-  "Swap Cons -> Prov",
-  "Setup Prov -> Cons",
-  "Drain Prov -> Cons",
-  "Swap Prov -> Cons",
-  "Penalty Box",
-  "Drain before Disconnect",
-  "Disconnect Wait",
-  "Monitor",
-  "unknown",
+	"Reset",
+	"Soft Reset",
+	"Suspend",
+	"Ping Low",
+	"Ping High",
+	"Prov Provider",
+	"Provider High",
+	"Wait Consumer",
+	"Prov Consumer",
+	"Consumer",
+	"Setup Cons -> Prov",
+	"Swap Cons -> Prov",
+	"Setup Prov -> Cons",
+	"Drain Prov -> Cons",
+	"Swap Prov -> Cons",
+	"Penalty Box",
+	"Drain before Disconnect",
+	"Disconnect Wait",
+	"Monitor",
+	"unknown",
 };
 #endif
 
-void setOrionSoftDelay(uint32_t delay)
-{
-  orionSoftResetDelay = delay;
-}
+void setOrionSoftDelay(uint32_t delay) { orionSoftResetDelay = delay; }
 
 /**
   * @brief  This function sets the system state, and executes any transitional actions
@@ -409,248 +388,227 @@ void setOrionSoftDelay(uint32_t delay)
   */
 uint8_t setOrionState(orionState_t newState)
 {
-  /*
-  static uint32_t lastTime = 0;
-  if (GetTickCount() - lastTime > 1000)
-  {
-    lastTime = GetTickCount();
-    DEBUG_PRINT_ORION("setOrionState ST=%d", newState);
-  }
-  */
-  uint8_t changeState = false;
-  orionState_t previousState = orionState;
-  if (orionState != newState)
-  {
-    if ((newState != 3) && (orionState!=3) &&
-        (newState != 4) && (orionState!=4))
-    {
-      DEBUG_PRINT_ORION("ST: %s (from %s)", stateName[newState], stateName[orionState]);
-    }
-    changeState = true;
-    orionState = newState;
-    switch (newState)
-    {
-      case orionStateReset:
-      {
-        setOrionPull(orionLineNone);
-        setOrionPower(orionPowerSourceNone, false);
-        TIMER_CLEAR(timer);
-        break;
-      }
-      case orionStateWaitDrainDisconnect:
-      {
-        setOrionPower(orionPowerSourceDrain, false);
+	/*
+	static uint32_t lastTime = 0;
+	if (GetTickCount() - lastTime > 1000)
+	{
+		lastTime = GetTickCount();
+		DEBUG_PRINT_ORION("setOrionState ST=%d", newState);
+	}
+	*/
+	uint8_t changeState = false;
+	orionState_t previousState = orionState;
+	if (orionState != newState)
+	{
+		if ((newState 	!= orionStatePingLow) &&
+			(orionState != orionStatePingLow) &&
+			(newState 	!= orionStatePingHigh) &&
+			(orionState != orionStatePingHigh))
+		{
+			DEBUG_PRINT_ORION("ST: %s (from %s)", stateName[newState], stateName[orionState]);
+		}
+		changeState = true;
+		orionState = newState;
+		switch (newState)
+		{
+			case orionStateReset:
+			{
+				setOrionPull(orionLineNone);
+				setOrionPower(orionPowerSourceNone, false);
+				TIMER_CLEAR(timer);
+				break;
+			}
+			case orionStateWaitDrainDisconnect:
+			{
+				setOrionPower(orionPowerSourceDrain, false);
 
-        if (orionIsConnected(previousState) == orionConnected)
-        {
-          mainSetEvents(MAIN_EVENT_AID_DISCONNECTED);
-        }
+				if (orionIsConnected(previousState) == orionConnected) { mainSetEvents(MAIN_EVENT_AID_DISCONNECTED); }
 
-        TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
-        break;
-      }
-      case orionStateWaitDisconnect:
-      {
-        setOrionPull(orionLineNone);
-        setOrionPower(orionPowerSourceNone, false);
+				TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
+				break;
+			}
+			case orionStateWaitDisconnect:
+			{
+				setOrionPull(orionLineNone);
+				setOrionPower(orionPowerSourceNone, false);
 
-        if (orionIsConnected(previousState) == orionConnected)
-        {
-          mainSetEvents(MAIN_EVENT_AID_DISCONNECTED);
-        }
+				if (orionIsConnected(previousState) == orionConnected) { mainSetEvents(MAIN_EVENT_AID_DISCONNECTED); }
 
-        TIMER_SET(timer, ORION_AID_DISCONNECT_MS);
-        break;
-      }
-      case orionStateSoftReset:
-      {
-        setOrionPower(orionPowerSourceNone, false);
-        orionAIDIsUp = false;
-        orionIdleDataVoltage = 0;
-        orionPowerPresent = false;
-        if (orionIsConnected(previousState) == orionConnected)
-        {
-          mainSetEvents(MAIN_EVENT_AID_DISCONNECTED);
-        }
-        if (getOrionPowerSource() == orionPowerSourceNone)
-        {
-          orionSoftResetDelay = 0;    // use no delay if not self-powered
-        }
-        TIMER_SET(timer, orionSoftResetDelay);
-        setOrionSoftDelay(ORION_SOFT_RESET_MS);  // reset to default
-        pushOrionConnectionState();
-        break;
-      }
-      case orionStateSuspend:
-      {
-        if (orionMode == orionModeMonitor)
-        {
-          setOrionState(orionStateMonitor);
-        }
-        else
-        {
-          setOrionPull(orionLinePullDown);
-        }
-        break;
-      }
-      case orionStatePingLow:
-      {
-        setOrionPull(orionLinePullDown);
-        pushOrionConnectionState();
+				TIMER_SET(timer, ORION_AID_DISCONNECT_MS);
+				break;
+			}
+			case orionStateSoftReset:
+			{
+				setOrionPower(orionPowerSourceNone, false);
+				orionAIDIsUp 			= false;
+				orionIdleDataVoltage 	= 0;
+				orionPowerPresent 		= false;
+				if (orionIsConnected(previousState) == orionConnected) { mainSetEvents(MAIN_EVENT_AID_DISCONNECTED); }
+				if (getOrionPowerSource() == orionPowerSourceNone) { setOrionSoftDelay(0); }	// use no delay if not self-powered
+				TIMER_SET(timer, orionSoftResetDelay);
+				setOrionSoftDelay(ORION_SOFT_RESET_MS);  // reset to default
+				pushOrionConnectionState();
+				break;
+			}
+			case orionStateSuspend:
+			{
+				if (orionMode == orionModeMonitor) 	{ setOrionState(orionStateMonitor); }
+				else 								{ setOrionPull(orionLinePullDown); }
+				break;
+			}
+			case orionStatePingLow:
+			{
+				setOrionPull(orionLinePullDown);
+				pushOrionConnectionState();
 
-        if ((orionMode & orionModeAccessory) != 0)
-        {
-          TIMER_SET(timer, ORION_AID_PING_PU_OFF_ACC_MS);
-        }
-        else if ((orionMode & orionModeDevice) != 0)
-        {
-          TIMER_SET(timer, ORION_AID_PING_PU_OFF_DEV_MS);
-        }
-        break;
-      }
-      case orionStatePingHigh:
-      {
-        TIMER_CLEAR(timer);
-        break;
-      }
-      case orionStateProvProvider:
-      {
-        setOrionPull(orionLinePullUp);
-        setOrionPower(orionPower, false);
+				if ((orionMode & orionModeAccessory) != 0)
+				{
+					TIMER_SET(timer, ORION_AID_PING_PU_OFF_ACC_MS);
+				}
+				else if ((orionMode & orionModeDevice) != 0)
+				{
+					TIMER_SET(timer, ORION_AID_PING_PU_OFF_DEV_MS);
+				}
+				break;
+			}
+			case orionStatePingHigh:
+			{
+				TIMER_CLEAR(timer);
+				break;
+			}
+			case orionStateProvProvider:
+			{
+				setOrionPull(orionLinePullUp);
+				setOrionPower(orionPower, false);
 
-        mainSetEvents(orionSwapInProgress ? MAIN_EVENT_AID_RESUME : MAIN_EVENT_AID_CONNECT);
-        orionSwapInProgress = false;
+				mainSetEvents(orionSwapInProgress ? MAIN_EVENT_AID_RESUME : MAIN_EVENT_AID_CONNECT);
+				orionSwapInProgress = false;
 
-        if ((orionMode & orionModeAccessory) != 0)
-        {
-          TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS * 3);
-        }
+				if ((orionMode & orionModeAccessory) != 0)
+				{
+					TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS * 3);
+				}
 #ifdef CNFG_SUPPORT_DEVICE_MODE
-        else if ((orionMode & orionModeDevice) != 0)
-        {
-          TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS);
-          mainSetEvents(MAIN_EVENT_AID_CONNECT);  // flag AID as connecting for host mode to enable IDIO
-        }
+				else if ((orionMode & orionModeDevice) != 0)
+				{
+					TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS);
+					mainSetEvents(MAIN_EVENT_AID_CONNECT);  // flag AID as connecting for host mode to enable IDIO
+				}
 #endif
-        else
-          TIMER_CLEAR(wakeTimer);
+				else
+					TIMER_CLEAR(wakeTimer);
 
-        TIMER_SET(timer, ORION_AID_DETECT_MS);
-        break;
-      }
-      case orionStateProvider:
-      {
-        setOrionPull(orionLinePullUp);
-        setOrionPower(orionPower, true);
-        pushOrionConnectionState();
+				TIMER_SET(timer, ORION_AID_DETECT_MS);
+				break;
+			}
+			case orionStateProvider:
+			{
+				setOrionPull(orionLinePullUp);
+				setOrionPower(orionPower, true);
+				pushOrionConnectionState();
 
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionConnectProvider]++;
+				orionStatistics[orionConnectProvider]++;
 #endif
-        TIMER_CLEAR(timer);
-        break;
-      }
-      case orionStateWaitConsumer:
-      {
-        setOrionPull(orionLinePullDown);
-        setOrionPower(orionPowerSourceNone, false);
+				TIMER_CLEAR(timer);
+				break;
+			}
+			case orionStateWaitConsumer:
+			{
+				setOrionPull(orionLinePullDown);
+				setOrionPower(orionPowerSourceNone, false);
 
-        TIMER_SET(timer, ORION_POWER_READY_DELAY_MS);
-        break;
-      }
-      case orionStateProvConsumer:
-      {
-        setOrionPull(orionLinePullDown);
+				TIMER_SET(timer, ORION_POWER_READY_DELAY_MS);
+				break;
+			}
+			case orionStateProvConsumer:
+			{
+				setOrionPull(orionLinePullDown);
 
-        if ((orionMode & orionModeAccessory) != 0)
-        {
-          TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS);
-        }
+				if ((orionMode & orionModeAccessory) != 0)
+				{
+					TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS);
+				}
 #ifdef CNFG_SUPPORT_DEVICE_MODE
-        else if ((orionMode & orionModeDevice) != 0)
-        {
-          TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS);
-        }
+				else if ((orionMode & orionModeDevice) != 0)
+				{
+					TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS);
+				}
 #endif
-        else
-          TIMER_CLEAR(wakeTimer);
+				else
+					TIMER_CLEAR(wakeTimer);
 
-        mainSetEvents(orionSwapInProgress ? MAIN_EVENT_AID_RESUME : MAIN_EVENT_AID_CONNECT);
-        orionSwapInProgress = false;
+				mainSetEvents(orionSwapInProgress ? MAIN_EVENT_AID_RESUME : MAIN_EVENT_AID_CONNECT);
+				orionSwapInProgress = false;
 
-        TIMER_SET(timer, ORION_AID_DETECT_MS);
-        break;
-      }
-      case orionStateConsumer:
-      {
-        setOrionPull(orionLinePullDown);
-        pushOrionConnectionState();
+				TIMER_SET(timer, ORION_AID_DETECT_MS);
+				break;
+			}
+			case orionStateConsumer:
+			{
+				setOrionPull(orionLinePullDown);
+				pushOrionConnectionState();
 
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionConnectConsumer]++;
+				orionStatistics[orionConnectConsumer]++;
 #endif
-        TIMER_SET(timer, ORION_POWER_POLL_DELAY_MS);
-        break;
-      }
-      case orionStateConsProvSetup:
-      {
-        mainSetEvents(MAIN_EVENT_AID_PAUSE);
-        // @TODO: power sink off
-        TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
-        break;
-      }
-      case orionStateConsProvSwap:
-      {
-        setOrionPull(orionLinePullUp);
-        orionAIDIsUp = false;
-        orionSwapInProgress = true;
-        TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
-        break;
-      }
-      case orionStateProvConsSetup:
-      {
-        mainSetEvents(MAIN_EVENT_AID_PAUSE);
-        setOrionPull(orionLinePullUp);
-
-        TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
-        break;
-      }
-      case orionStateProvConsDrain:
-      {
-        setOrionPower(orionPowerSourceDrain, false);
-
-        TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
-        break;
-      }
-      case orionStateProvConsSwap:
-      {
-        setOrionPower(orionPowerSourceNone, false);
-        setOrionPull(orionLinePullDown);
-
-        orionSwapInProgress = true;
-        TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
-        break;
-      }
-      case orionStatePenaltyBox:
-      {
-        setOrionPull(orionLineNone);
-        setOrionPower(orionPowerSourceDrain, false);
-        if (orionIsConnected(previousState) == orionConnected)
-        {
-          mainSetEvents(MAIN_EVENT_AID_DISCONNECTED);
-        }
-        pushOrionConnectionState();
-        TIMER_SET(timer, ORION_PENALTY_BOX_MS);
-        break;
-      }
-      case orionStateMonitor:
-      {
-        setOrionPull(orionLineNone);
-        TIMER_SET(timer, ORION_POWER_POLL_DELAY_MS);
-      }
-    }
-  }
-  return changeState;
+				TIMER_SET(timer, ORION_POWER_POLL_DELAY_MS);
+				break;
+			}
+			case orionStateConsProvSetup:
+			{
+				mainSetEvents(MAIN_EVENT_AID_PAUSE);
+				// @TODO: power sink off
+				TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
+				break;
+			}
+			case orionStateConsProvSwap:
+			{
+				setOrionPull(orionLinePullUp);
+				orionAIDIsUp 		= false;
+				orionSwapInProgress = true;
+				TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
+				break;
+			}
+			case orionStateProvConsSetup:
+			{
+				mainSetEvents(MAIN_EVENT_AID_PAUSE);
+				setOrionPull(orionLinePullUp);
+				TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
+				break;
+			}
+			case orionStateProvConsDrain:
+			{
+				setOrionPower(orionPowerSourceDrain, false);
+				TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
+				break;
+			}
+			case orionStateProvConsSwap:
+			{
+				setOrionPower(orionPowerSourceNone, false);
+				setOrionPull(orionLinePullDown);
+				orionSwapInProgress = true;
+				TIMER_SET(timer, ORION_POWER_SWAP_DELAY_MS);
+				break;
+			}
+			case orionStatePenaltyBox:
+			{
+				setOrionPull(orionLineNone);
+				setOrionPower(orionPowerSourceDrain, false);
+				if (orionIsConnected(previousState) == orionConnected) { mainSetEvents(MAIN_EVENT_AID_DISCONNECTED); }
+				pushOrionConnectionState();
+				TIMER_SET(timer, ORION_PENALTY_BOX_MS);
+				break;
+			}
+			case orionStateMonitor:
+			{
+				setOrionPull(orionLineNone);
+				TIMER_SET(timer, ORION_POWER_POLL_DELAY_MS);
+				break;
+			}
+		}
+	}
+	return changeState;
 }
 
 
@@ -661,392 +619,361 @@ uint8_t setOrionState(orionState_t newState)
   */
 uint8_t orionService(void)
 {
-  /*
-  static uint32_t lastTime = 0;
-  if (GetTickCount() - lastTime > 1000)
-  {
-    lastTime = GetTickCount();
-    DEBUG_PRINT_ORION("orionService ST=%d", orionState);
-  }
-  */
-  switch (orionState)
-  {
-    case orionStateReset:
-    {
-      setOrionState(orionStateSoftReset);
-      break;
-    }
-    case orionStateWaitDisconnect:
-    {
-      if ((TIMER_EXPIRED(timer) == true))
-      {
-        setOrionState(orionStateSoftReset);
-      }
-      break;
-    }
-    case orionStateWaitDrainDisconnect:
-    {
-      if (getOrionVbusDischarged())
-      {
-        setOrionState(orionStateWaitDisconnect);
-      }
-      else if ((TIMER_EXPIRED(timer) == true))
-      {
-        DEBUG_PRINT_ORION("TO: wait for disc drain, v=%d", (unsigned int)orionVbusVoltage);
-        setOrionState(orionStateWaitDisconnect);
-      }
-
-      break;
-    }
-    case orionStateSoftReset:
-    {
-      if ((TIMER_EXPIRED(timer) == true))
-      {
-        setOrionState(orionStateSuspend);
-      }
-      break;
-    }
-    case orionStateSuspend:
-    {
-      if (orionMode != orionModeSuspend)
-      {
-        if (orionPower != orionPowerSourceNone)
-        {
-          // power provider
-          setOrionState(orionStatePingLow);
-        }
-        else if (getOrionDataAboveRxThreshold() && !getOrionDataAboveRMThreshold())
-        {
-          // power consumer, wait data bus in range
-          setOrionState(orionStateWaitConsumer);
-        }
-      }
-      break;
-    }
-    case orionStatePingLow:
-    {
-      if ((TIMER_EXPIRED(timer) == true))
-      {
-        setOrionState(orionStatePingHigh);
-      }
-      else if ((getOrionVbusAboveThreshold()) ||
-                (getOrionDataAboveRxThreshold() && !getOrionDataAboveRMThreshold()))
-      {
-        setOrionState(orionStateWaitConsumer);
-      }
-      break;
-    }
-    case orionStatePingHigh:
-    {
-      setOrionPull(orionLinePullUp);
-      // @TODO: This should be different timing for device and accessory
-      tmrDelay_us(ORION_AID_PING_PU_ON_US);
-      if (getOrionDataAboveRxThreshold() && !getOrionDataAboveRMThreshold())
-        setOrionState(orionStateProvProvider);
-      else
-        setOrionState(orionStatePingLow);
-      break;
-    }
-    case orionStateProvProvider:
-    {
-      if (getOrionDataAboveRMThreshold())
-      {
-        DEBUG_PRINT_ORION("Lost Data as provider, rm=%d", getOrionDataAboveRMThreshold());
-        setOrionState(orionStateWaitDrainDisconnect);
+	/*
+	static uint32_t lastTime = 0;
+	if (GetTickCount() - lastTime > 1000)
+	{
+		lastTime = GetTickCount();
+		DEBUG_PRINT_ORION("orionService ST=%d", orionState);
+	}
+	*/
+	switch (orionState)
+	{
+    	case orionStateReset:
+    	{
+    		setOrionState(orionStateSoftReset);
+    		break;
+    	}
+    	case orionStateWaitDisconnect:
+    	{
+    		if ((TIMER_EXPIRED(timer) == true))
+    		{
+    			setOrionState(orionStateSoftReset);
+    		}
+    		break;
+    	}
+    	case orionStateWaitDrainDisconnect:
+    	{
+    		if (getOrionVbusDischarged()) { setOrionState(orionStateWaitDisconnect); }
+    		else if ((TIMER_EXPIRED(timer) == true))
+    		{
+    			DEBUG_PRINT_ORION("TO: wait for disc drain, v=%d", (unsigned int)orionVbusVoltage);
+    			setOrionState(orionStateWaitDisconnect);
+    		}
+    		break;
+    	}
+    	case orionStateSoftReset:
+    	{
+    		if ((TIMER_EXPIRED(timer) == true)) { setOrionState(orionStateSuspend); }
+    		break;
+    	}
+    	case orionStateSuspend:
+    	{
+    		if (orionMode != orionModeSuspend)
+    		{
+    			if (orionPower != orionPowerSourceNone)
+    			{
+    				// power provider
+    				setOrionState(orionStatePingLow);
+    			}
+    			else if (getOrionDataAboveRxThreshold() && !getOrionDataAboveRMThreshold())
+    			{
+    				// power consumer, wait data bus in range
+    				setOrionState(orionStateWaitConsumer);
+    			}
+    		}
+    		break;
+    	}
+    	case orionStatePingLow:
+    	{
+    		if ((TIMER_EXPIRED(timer) == true)) { setOrionState(orionStatePingHigh); }
+    		else if ((getOrionVbusAboveThreshold()) ||
+    				(getOrionDataAboveRxThreshold() &&
+    				!getOrionDataAboveRMThreshold()))
+    		{
+    			setOrionState(orionStateWaitConsumer);
+    		}
+    		break;
+    	}
+    	case orionStatePingHigh:
+    	{
+    		setOrionPull(orionLinePullUp);
+    		// @TODO: This should be different timing for device and accessory
+    		tmrDelay_us(ORION_AID_PING_PU_ON_US);
+    		if (getOrionDataAboveRxThreshold() && !getOrionDataAboveRMThreshold()) 	setOrionState(orionStateProvProvider);
+    		else																	setOrionState(orionStatePingLow);
+    		break;
+    	}
+    	case orionStateProvProvider:
+    	{
+    		if (getOrionDataAboveRMThreshold())
+    		{
+    			DEBUG_PRINT_ORION("Lost Data as provider, rm=%d", getOrionDataAboveRMThreshold());
+    			setOrionState(orionStateWaitDrainDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorLostData]++;
+    			orionStatistics[orionErrorLostData]++;
 #endif
-      }
-      else if (orionAIDIsUp)
-      {
-        setOrionState(orionStateProvider);
-      }
-      else if ((TIMER_EXPIRED(timer) == true))
-      {
-        DEBUG_PRINT_ORION("No AID Conn");
-        setOrionState(orionStatePenaltyBox);
+    		}
+    		else if (orionAIDIsUp)
+    		{
+    			setOrionState(orionStateProvider);
+    		}
+    		else if ((TIMER_EXPIRED(timer) == true))
+    		{
+    			DEBUG_PRINT_ORION("No AID Conn");
+    			setOrionState(orionStatePenaltyBox);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorNoAIDComm]++;
+    			orionStatistics[orionErrorNoAIDComm]++;
 #endif
-      }
-      else if (TIMER_EXPIRED(wakeTimer) == true)
-      {
-        if (((orionMode & orionModeAccessory) != 0) && idbusIsIdle())
-        {
-          idbusSendWake();
-        }
+    		}
+    		else if (TIMER_EXPIRED(wakeTimer) == true)
+    		{
+    			if (((orionMode & orionModeAccessory) != 0) && idbusIsIdle())
+    			{
+    				idbusSendWake();
+    			}
 #ifdef CNFG_SUPPORT_DEVICE_MODE
-        else if (((orionMode & orionModeDevice) != 0) && idbusIsIdle())
-        {
-          idioSendHostCommand(&idioIDCommand[0], sizeof(idioIDCommand) - 1);
-        }
+    			else if (((orionMode & orionModeDevice) != 0) && idbusIsIdle())
+    			{
+    				idioSendHostCommand(&idioIDCommand[0], sizeof(idioIDCommand) - 1);
+    			}
 #endif
-        TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS);
-      }
-      break;
-    }
-    case orionStateProvider:
-    {
-      if (getOrionDataAboveRMThreshold())
-      {
-        DEBUG_PRINT_ORION("Lost Data as provider, rm=%d", getOrionDataAboveRMThreshold());
-        setOrionState(orionStateWaitDrainDisconnect);
+    			TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS);
+    		}
+    		break;
+    	}
+    	case orionStateProvider:
+    	{
+    		if (getOrionDataAboveRMThreshold())
+    		{
+    			DEBUG_PRINT_ORION("Lost Data as provider, rm=%d", getOrionDataAboveRMThreshold());
+    			setOrionState(orionStateWaitDrainDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorLostData]++;
+    			orionStatistics[orionErrorLostData]++;
 #endif
-      }
-      break;
-    }
-    case orionStatePenaltyBox:
-    {
-      if (orionPowerPresent && !getOrionVbusAboveThreshold())
-      {
-        setOrionPower(orionPowerSourceNone, false);
-      }
-
-      if ((TIMER_EXPIRED(timer) == true))
-      {
-        setOrionState(orionStateSoftReset);
-      }
-      break;
-    }
-    case orionStateWaitConsumer:
-    {
-      if (getOrionVbusAboveThreshold())
-      {
-        setOrionState(orionStateProvConsumer);
-      }
-      if (TIMER_EXPIRED(timer) == true)
-      {
-        DEBUG_PRINT_ORION("TO: wait for Vbus, v=%d", (unsigned int)orionVbusVoltage);
-        setOrionState(orionStateWaitDisconnect);
-      }
-      break;
-    }
-    case orionStateProvConsumer:
-    {
-      if (TIMER_EXPIRED(timer) == true)
-      {
-        DEBUG_PRINT_ORION("No AID Conn");
-        setOrionState(orionStateWaitDisconnect);
+    		}
+    		break;
+    	}
+    	case orionStatePenaltyBox:
+    	{
+    		if (orionPowerPresent && !getOrionVbusAboveThreshold()) { setOrionPower(orionPowerSourceNone, false); }
+    		if ((TIMER_EXPIRED(timer) == true))						{ setOrionState(orionStateSoftReset); }
+    		break;
+    	}
+    	case orionStateWaitConsumer:
+    	{
+    		if (getOrionVbusAboveThreshold()) { setOrionState(orionStateProvConsumer); }
+    		if (TIMER_EXPIRED(timer) == true)
+    		{
+    			DEBUG_PRINT_ORION("TO: wait for Vbus, v=%d", (unsigned int)orionVbusVoltage);
+    			setOrionState(orionStateWaitDisconnect);
+    		}
+    		break;
+    	}
+    	case orionStateProvConsumer:
+    	{
+    		if (TIMER_EXPIRED(timer) == true)
+    		{
+    			DEBUG_PRINT_ORION("No AID Conn");
+    			setOrionState(orionStateWaitDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorNoAIDComm]++;
+    			orionStatistics[orionErrorNoAIDComm]++;
 #endif
-      }
-      else if (!getOrionVbusAboveThreshold())
-      {
-        DEBUG_PRINT_ORION("Lost Vbus, v=%dmV", (unsigned int)orionVbusVoltage);
-        setOrionState(orionStateWaitDisconnect);
+    		}
+    		else if (!getOrionVbusAboveThreshold())
+    		{
+    			DEBUG_PRINT_ORION("Lost Vbus, v=%dmV", (unsigned int)orionVbusVoltage);
+    			setOrionState(orionStateWaitDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorLostVbus]++;
+    			orionStatistics[orionErrorLostVbus]++;
 #endif
-      }
-      else if (idbusIsIdle() && !getOrionDataAboveRxThreshold())
-      {
-        DEBUG_PRINT_ORION("Lost data, d=%d", getOrionDataAboveRxThreshold());
-        setOrionState(orionStateWaitDisconnect);
+    		}
+    		else if (idbusIsIdle() && !getOrionDataAboveRxThreshold())
+    		{
+    			DEBUG_PRINT_ORION("Lost data, d=%d", getOrionDataAboveRxThreshold());
+    			setOrionState(orionStateWaitDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorLostData]++;
+    			orionStatistics[orionErrorLostData]++;
 #endif
-      }
-      else if (orionAIDIsUp)
-      {
-        setOrionState(orionStateConsumer);
-      }
-      else if (TIMER_EXPIRED(wakeTimer) == true)
-      {
-        if (idbusIsIdle())
-        {
-          if ((orionMode & orionModeAccessory) != 0)
-            idbusSendWake();
+    		}
+    		else if (orionAIDIsUp)
+    		{
+    			setOrionState(orionStateConsumer);
+    		}
+    		else if (TIMER_EXPIRED(wakeTimer) == true)
+    		{
+    			if (idbusIsIdle())
+    			{
+    				if ((orionMode & orionModeAccessory) != 0)	idbusSendWake();
 #ifdef CNFG_SUPPORT_DEVICE_MODE
-          else if ((orionMode & orionModeDevice) != 0)
-            idioSendHostCommand(&idioIDCommand[0], sizeof(idioIDCommand) - 1);
+    				else if ((orionMode & orionModeDevice) != 0)
+    					idioSendHostCommand(&idioIDCommand[0], sizeof(idioIDCommand) - 1);
 #endif
-        }
-        TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS);
-      }
-      break;
-    }
-    case orionStateConsumer:
-    {
-      if (TIMER_EXPIRED(timer) == true)
-      {
-        if (!getOrionVbusAboveThreshold())
-        {
-          DEBUG_PRINT_ORION("Lost Vbus, v=%dmV", (unsigned int)orionVbusVoltage);
-          setOrionState(orionStateWaitDisconnect);
+    			}
+    			TIMER_SET(wakeTimer, ORION_WAKE_TIMER_MS);
+    		}
+    		break;
+    	}
+    	case orionStateConsumer:
+    	{
+    		if (TIMER_EXPIRED(timer) == true)
+    		{
+    			if (!getOrionVbusAboveThreshold())
+    			{
+    				DEBUG_PRINT_ORION("Lost Vbus, v=%dmV", (unsigned int)orionVbusVoltage);
+    				setOrionState(orionStateWaitDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-          orionStatistics[orionErrorLostVbus]++;
+    				orionStatistics[orionErrorLostVbus]++;
 #endif
-        }
-        else
-        {
-          if (idbusIsIdle())
-          {
+    			}
+    			else
+    			{
+    				if (idbusIsIdle())
+    				{
 #ifdef POLL_CONSUMER_DISCONNECT
-            if (!getOrionDataAboveRxThreshold())
-            {
-              DEBUG_PRINT_ORION("Lost Data, Rx=%d", getOrionDataAboveRxThreshold());
-              setOrionState(orionStateWaitDisconnect);
+    					if (!getOrionDataAboveRxThreshold())
+    					{
+    						DEBUG_PRINT_ORION("Lost Data, Rx=%d", getOrionDataAboveRxThreshold());
+    						setOrionState(orionStateWaitDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-              orionStatistics[orionErrorLostData]++;
+    						orionStatistics[orionErrorLostData]++;
 #endif
-            }
+    					}
 #endif
-          }
-        }
-        TIMER_SET(timer, ORION_POWER_POLL_DELAY_MS);
-      }
-      break;
-    }
-    case orionStateConsProvSetup:
-    {
-      if (!getOrionDataAboveRxThreshold())
-      {
-        setOrionState(orionStateConsProvSwap);
-      }
-      else if (TIMER_EXPIRED(timer) == true)
-      {
-        DEBUG_PRINT_ORION("TO: wait for Vbus removal, v=%dmV", (unsigned int)orionVbusVoltage);
-        //setOrionState(orionStateWaitDisconnect);
-        setOrionState(orionStateConsProvSwap);
+    				}
+    			}
+    			TIMER_SET(timer, ORION_POWER_POLL_DELAY_MS);
+    		}
+    		break;
+    	}
+    	case orionStateConsProvSetup:
+    	{
+    		if (!getOrionDataAboveRxThreshold()) 	{ setOrionState(orionStateConsProvSwap); }
+    		else if (TIMER_EXPIRED(timer) == true)
+    		{
+    			DEBUG_PRINT_ORION("TO: wait for Vbus removal, v=%dmV", (unsigned int)orionVbusVoltage);
+    			//setOrionState(orionStateWaitDisconnect);
+    			setOrionState(orionStateConsProvSwap);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorSwapTimeout]++;
+    			orionStatistics[orionErrorSwapTimeout]++;
 #endif
-      }
-      break;
-    }
-    case orionStateConsProvSwap:
-    {
-      if (getOrionDataInRange())
-      {
-        setOrionState(orionStateProvProvider);
-        orionAIDIsUp = false;
-      }
-      else if (TIMER_EXPIRED(timer) == true)
-      {
-        DEBUG_PRINT_ORION("TO: wait for Vbus removal, v=%dmV", (unsigned int)orionVbusVoltage);
-        setOrionState(orionStateWaitDisconnect);
+    		}
+    		break;
+    	}
+    	case orionStateConsProvSwap:
+    	{
+    		if (getOrionDataInRange())
+    		{
+    			setOrionState(orionStateProvProvider);
+    			orionAIDIsUp = false;
+    		}
+    		else if (TIMER_EXPIRED(timer) == true)
+    		{
+    			DEBUG_PRINT_ORION("TO: wait for Vbus removal, v=%dmV", (unsigned int)orionVbusVoltage);
+    			setOrionState(orionStateWaitDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorSwapTimeout]++;
+    			orionStatistics[orionErrorSwapTimeout]++;
 #endif
-      }
-      break;
-    }
-    case orionStateProvConsSetup:
-    {
-      if (getOrionDataAboveRMThreshold())
-      {
-        setOrionState(orionStateProvConsDrain);
-      }
-      else if ((TIMER_EXPIRED(timer) == true))
-      {
-        DEBUG_PRINT_ORION("TO: wait for disconnect");
-        setOrionState(orionStateWaitDrainDisconnect);
+    		}
+    		break;
+    	}
+    	case orionStateProvConsSetup:
+    	{
+    		if (getOrionDataAboveRMThreshold()) 		{ setOrionState(orionStateProvConsDrain); }
+    		else if ((TIMER_EXPIRED(timer) == true))
+    		{
+    			DEBUG_PRINT_ORION("TO: wait for disconnect");
+    			setOrionState(orionStateWaitDrainDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorSwapTimeout]++;
+    			orionStatistics[orionErrorSwapTimeout]++;
 #endif
-      }
-      break;
-    }
-    case orionStateProvConsDrain:
-    {
-      if (getOrionVbusDischarged())
-      {
-        setOrionState(orionStateProvConsSwap);
-      }
-      else if (TIMER_EXPIRED(timer) == true)
-      {
-        DEBUG_PRINT_ORION("TO: wait for Vbus drain, v=%dmV", (unsigned int)orionVbusVoltage);
-        setOrionState(orionStateWaitDisconnect);
+    		}
+    		break;
+    	}
+    	case orionStateProvConsDrain:
+    	{
+    		if (getOrionVbusDischarged()) { setOrionState(orionStateProvConsSwap); }
+    		else if (TIMER_EXPIRED(timer) == true)
+    		{
+    			DEBUG_PRINT_ORION("TO: wait for Vbus drain, v=%dmV", (unsigned int)orionVbusVoltage);
+    			setOrionState(orionStateWaitDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorSwapTimeout]++;
+    			orionStatistics[orionErrorSwapTimeout]++;
 #endif
-      }
-      break;
-    }
-    case orionStateProvConsSwap:
-    {
-      if (getOrionDataInRange())
-      {
-        orionAIDIsUp = false;
-        setOrionState(orionStateWaitConsumer);
-      }
-      else if (TIMER_EXPIRED(timer) == true)
-      {
-        DEBUG_PRINT_ORION("TO: wait for data, rx=%d, rm=%d", getOrionDataAboveRxThreshold(), getOrionDataAboveRMThreshold());
-        setOrionState(orionStateWaitDisconnect);
+    		}
+    		break;
+    	}
+    	case orionStateProvConsSwap:
+    	{
+    		if (getOrionDataInRange())
+    		{
+    			orionAIDIsUp = false;
+    			setOrionState(orionStateWaitConsumer);
+    		}
+    		else if (TIMER_EXPIRED(timer) == true)
+    		{
+    			DEBUG_PRINT_ORION("TO: wait for data, rx=%d, rm=%d", getOrionDataAboveRxThreshold(), getOrionDataAboveRMThreshold());
+    			setOrionState(orionStateWaitDisconnect);
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-        orionStatistics[orionErrorSwapTimeout]++;
+    			orionStatistics[orionErrorSwapTimeout]++;
 #endif
-      }
-      break;
-    }
-    case orionStateMonitor:
-    {
+    		}
+    		break;
+    	}
+    	case orionStateMonitor:
+    	{
 #ifdef CNFG_ATS_SUPPORT
-      if ((TIMER_EXPIRED(timer) == true))
-      {
-        if (idbusIsIdle())
-        {
-          orionConnectState_t connectState = orionDisconnected;
-          uint32_t orionVoltage = 0;
-          uint32_t orionPullupVoltage = 0;
+    		if ((TIMER_EXPIRED(timer) == true))
+    		{
+    			if (idbusIsIdle())
+    			{
+					orionConnectState_t connectState = orionDisconnected;
+					uint32_t orionVoltage = 0;
+					uint32_t orionPullupVoltage = 0;
 
-          orionVoltage = adcComputeVoltage(ADC_Convert(ALT_ORION_RX3_ADC_CH));
-          if (orionVoltage > ORION_DATA_PROVIDER_DISC_THRESHOLD)
-          {
-            connectState = orionConnecting;
-          }
-          else if (orionVoltage < ORION_DATA_CONSUMER_DISC_THRESHOLD)
-          {
-            // line appears low, retest with pullup
-            GPIO_InitTypeDef          GPIO_InitStruct;
-            GPIO_InitStruct.Pin = GPIO_PIN_BIT(ALT_ORION_RX3);
-            GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-            GPIO_InitStruct.Pull = GPIO_PULLUP;
-            HAL_GPIO_Init(GPIO_PIN_PORT(ALT_ORION_RX3), &GPIO_InitStruct);
-            tmrDelay_us(10);  // set empirically
-            GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-            GPIO_InitStruct.Pull = GPIO_NOPULL;
-            HAL_GPIO_Init(GPIO_PIN_PORT(ALT_ORION_RX3), &GPIO_InitStruct);
-            orionPullupVoltage = adcComputeVoltage(ADC_Convert(ALT_ORION_RX3_ADC_CH));
+					orionVoltage = adcComputeVoltage(ADC_Convert(ALT_ORION_RX3_ADC_CH));
+					if (orionVoltage > ORION_DATA_PROVIDER_DISC_THRESHOLD)
+					{
+						connectState = orionConnecting;
+					}
+					else if (orionVoltage < ORION_DATA_CONSUMER_DISC_THRESHOLD)
+					{
+						// line appears low, retest with pullup
+						GPIO_InitTypeDef          GPIO_InitStruct;
+						GPIO_InitStruct.Pin = GPIO_PIN_BIT(ALT_ORION_RX3);
+						GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+						GPIO_InitStruct.Pull = GPIO_PULLUP;
+						HAL_GPIO_Init(GPIO_PIN_PORT(ALT_ORION_RX3), &GPIO_InitStruct);
+						tmrDelay_us(10);  // set empirically
+						GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+						GPIO_InitStruct.Pull = GPIO_NOPULL;
+						HAL_GPIO_Init(GPIO_PIN_PORT(ALT_ORION_RX3), &GPIO_InitStruct);
+						orionPullupVoltage = adcComputeVoltage(ADC_Convert(ALT_ORION_RX3_ADC_CH));
 
-            if (orionPullupVoltage < ORION_DATA_CONSUMER_DISC_THRESHOLD)
-            {
-              // pull down is active somewhere
-              connectState = orionConnecting;
-            }
-            else
-            {
-              connectState = orionDisconnected;
-            }
-          }
-          else
-          {
-            connectState = orionConnected;
-          }
-          //DEBUG_PRINT_ORION("Monitor State, s=%d, ocv=%lu, puv=%lu", connectState, orionVoltage, orionPullupVoltage);
-          if (orionConnectState != connectState)
-          {
-            DEBUG_PRINT_ORION("Monitor State Change, s=%d, ocv=%lu, puv=%lu", connectState, orionVoltage, orionPullupVoltage);
+						if (orionPullupVoltage < ORION_DATA_CONSUMER_DISC_THRESHOLD)
+						{
+							// pull down is active somewhere
+							connectState = orionConnecting;
+						}
+						else
+						{
+							connectState = orionDisconnected;
+						}
+					}
+					else
+					{
+						connectState = orionConnected;
+					}
+					//DEBUG_PRINT_ORION("Monitor State, s=%d, ocv=%lu, puv=%lu", connectState, orionVoltage, orionPullupVoltage);
+					if (orionConnectState != connectState)
+					{
+						DEBUG_PRINT_ORION("Monitor State Change, s=%d, ocv=%lu, puv=%lu", connectState, orionVoltage, orionPullupVoltage);
 
-            orionConnectState = connectState;
-            atfReportAccessoryConnectionState(&connectState);
-          }
-        }
-        TIMER_SET(timer, ORION_MONITOR_POLL_DELAY_MS);
-      }
+						orionConnectState = connectState;
+						atfReportAccessoryConnectionState(&connectState);
+					}
+    			}
+    			TIMER_SET(timer, ORION_MONITOR_POLL_DELAY_MS);
+    		}
 #endif
-      break;
-    }
-    default:
-    {
-      break;
-    }
-  }
-  return true;
+    		break;
+    	}
+    	default:
+    	{
+    		break;
+    	}
+	}
+	return true;
 }
 
 
@@ -1055,10 +982,7 @@ uint8_t orionService(void)
   * @param  None
   * @retval true, if system changed state
   */
-uint8_t orionDisconnect(void)
-{
-  return setOrionState(orionStateWaitDisconnect);
-}
+uint8_t orionDisconnect(void) { return setOrionState(orionStateWaitDisconnect); }
 
 
 /**
@@ -1072,9 +996,9 @@ uint8_t orionDisconnect(void)
   */
 uint8_t setOrionMode(orionMode_t mode)
 {
-  orionMode_t oldMode = orionMode;
-  orionMode = mode;
-  return (oldMode != mode);
+	orionMode_t oldMode = orionMode;
+	orionMode 			= mode;
+	return (oldMode != mode);
 }
 
 
@@ -1084,10 +1008,7 @@ uint8_t setOrionMode(orionMode_t mode)
   * @param  None
   * @retval suspend state (true = suspended)
   */
-orionMode_t getOrionMode(void)
-{
-  return orionMode;
-}
+orionMode_t getOrionMode(void) { return orionMode; }
 
 
 /**
@@ -1097,33 +1018,33 @@ orionMode_t getOrionMode(void)
   */
 uint8_t setOrionPowerSwap(void)
 {
-  uint8_t switching = false;
-  switch (orionState)
-  {
-      case orionStateProvider:
-      {
-        setOrionState(orionStateProvConsSetup);
-        switching = true;
-        break;
-      }
-      case orionStateConsumer:
-      {
-        if (orionPower != orionPowerSourceNone)
-        {
-          setOrionState(orionStateConsProvSetup);
-          switching = true;
-        }
+	uint8_t switching = false;
+	switch (orionState)
+	{
+		case orionStateProvider:
+		{
+			setOrionState(orionStateProvConsSetup);
+			switching = true;
+			break;
+		}
+		case orionStateConsumer:
+		{
+			if (orionPower != orionPowerSourceNone)
+			{
+				setOrionState(orionStateConsProvSetup);
+				switching = true;
+			}
         else
-          DEBUG_PRINT_ORION("C->P fail, p=%d", orionPower);
+        	DEBUG_PRINT_ORION("C->P fail, p=%d", orionPower);
         break;
-      }
-      default:
-      {
-        DEBUG_PRINT_ORION("pswap fail, s=%d", orionState);
-        break;
-      }
-  }
-  return switching;
+		}
+		default:
+		{
+			DEBUG_PRINT_ORION("pswap fail, s=%d", orionState);
+			break;
+		}
+	}
+	return switching;
 }
 
 
@@ -1134,13 +1055,13 @@ uint8_t setOrionPowerSwap(void)
   */
 uint8_t setOrionHighPower(void)
 {
-  uint8_t switching = false;
-  if (orionState == orionStateProvider)
-  {
-    setOrionPower(orionPower, true);
-    switching = true;
-  }
-  return switching;
+	uint8_t switching = false;
+	if (orionState == orionStateProvider)
+	{
+		setOrionPower(orionPower, true);
+		switching = true;
+	}
+	return switching;
 }
 
 
@@ -1149,10 +1070,7 @@ uint8_t setOrionHighPower(void)
   * @param  AID state (true = working)
   * @retval None
   */
-void setOrionAIDState(uint8_t up)
-{
-  orionAIDIsUp = up;
-}
+void setOrionAIDState(uint8_t up) { orionAIDIsUp = up; }
 
 
 /**
@@ -1160,10 +1078,7 @@ void setOrionAIDState(uint8_t up)
   * @param  None
   * @retval AID state (true = working)
   */
-uint8_t getOrionAIDState(void)
-{
-  return orionAIDIsUp;
-}
+uint8_t getOrionAIDState(void) { return orionAIDIsUp; }
 
 
 /**
@@ -1171,10 +1086,7 @@ uint8_t getOrionAIDState(void)
   * @param  None
   * @retval source
   */
-orionPowerSource_t getOrionPowerSource(void)
-{
-  return orionPower;
-}
+orionPowerSource_t getOrionPowerSource(void) { return orionPower; }
 
 
 /**
@@ -1185,9 +1097,9 @@ orionPowerSource_t getOrionPowerSource(void)
   */
 uint8_t setOrionPowerSource(orionPowerSource_t source)
 {
-  orionPowerSource_t oldSource = orionPower;
-  orionPower = source;
-  return (oldSource != orionPower);
+	orionPowerSource_t oldSource = orionPower;
+	orionPower = source;
+	return (oldSource != orionPower);
 }
 
 
@@ -1197,10 +1109,7 @@ uint8_t setOrionPowerSource(orionPowerSource_t source)
   *           if source = none, we are a consumer
   * @retval None
   */
-uint16_t getOrionDataIdleLevel(void)
-{
-  return orionIdleDataVoltage;
-}
+uint16_t getOrionDataIdleLevel(void) { return orionIdleDataVoltage; }
 
 
 /**
@@ -1210,19 +1119,18 @@ uint16_t getOrionDataIdleLevel(void)
   */
 uint8_t orionInit(void)
 {
-  orionState = orionStateReset;
-  orionPower = orionPowerSourceNone;
-  orionAIDIsUp = false;
+	orionState 		= orionStateReset;
+	orionPower 		= orionPowerSourceNone;
+	orionAIDIsUp 	= false;
 
 #ifdef CNFG_COLLECT_ORION_STATISTICS
-  {
-    uint32_t i;
-    for (i = 0; i < orionErrorCount; i++)
-      orionStatistics[i] = 0;
-  }
+	{
+		uint32_t i;
+		for (i = 0; i < orionErrorCount; i++)
+			orionStatistics[i] = 0;
+	}
 #endif
-
-  return true;
+	return true;
 }
 
 
@@ -1243,18 +1151,18 @@ void setOrionInterfacePower(uint8_t mode)
   */
 uint8_t getOrionInterfacePower(void)
 {
-  return false;
+	return false;
 }
 #endif
 
 #ifdef CNFG_AID_ID_VARIABLE_RESPONSE
 uint8_t orionCommandIdResponse[6] = {
-  AID_RESPONSE_ACCx_NORMAL | AID_RESPONSE_USB_NONE | AID_RESPONSE_UART_NONE,
-  AID_RESPONSE_POWER_UHPM | AID_RESPONSE_HIGHVOLTAGE_5V | AID_RESPONSE_ACCINFO /*| AID_RESPONSE_AUTH*/,
-  AID_RESPONSE_BD,
-  0,
-  0,
-  0,
+	AID_RESPONSE_ACCx_NORMAL | AID_RESPONSE_USB_NONE | AID_RESPONSE_UART_NONE,
+	AID_RESPONSE_POWER_UHPM | AID_RESPONSE_HIGHVOLTAGE_5V | AID_RESPONSE_ACCINFO /*| AID_RESPONSE_AUTH*/,
+	AID_RESPONSE_BD,
+	0,
+	0,
+	0,
 };
 
 
@@ -1265,9 +1173,7 @@ uint8_t orionCommandIdResponse[6] = {
   */
 uint8_t* getOrionId(uint16_t systemId)
 {
-  if (!orionAIDIsUp)
-    { mainSetEvents(MAIN_EVENT_AID_RUNNING); }
-
-  return &orionCommandIdResponse[0];
+	if (!orionAIDIsUp) { mainSetEvents(MAIN_EVENT_AID_RUNNING); }
+	return &orionCommandIdResponse[0];
 }
 #endif

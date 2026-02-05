@@ -595,7 +595,7 @@ void idioInit(void)
 {
 	idioEnabled = false;
 	ifOps = &idioIfOps;
-	ifOps->init(ifOps->uartHandle, ORION_UART_RATE);
+	ifOps->init(ifOps->uartHandle);
 #ifdef CNFG_AID_HAS_BULK_DATA
 	idioBulkDataInit();
 #endif

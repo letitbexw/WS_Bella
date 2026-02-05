@@ -30,6 +30,9 @@
 #define CNFG_HW_REVISION              	0               // Revision number
 
 
+
+#define CNFG_WATCHDOG_ENABLED
+
 /* System Timers */
 #define HF_TIMER               			TIM6
 #define HF_TIMER_FREQUENCY         		1000000             /* = 1MHZ -> timer runs in microseconds */

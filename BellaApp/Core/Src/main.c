@@ -25,9 +25,13 @@
 #include "adc.h"
 #include "usbpd.h"
 #include "usb_device.h"
+#include "target.h"
 
 
 UART_HandleTypeDef idbusUartHandle;
+
+volatile uint32_t mainEvents = 0;
+static bool mainAuthState = false;
 
 /* Private function prototypes -----------------------------------------------*/
 static void MX_DMA_Init(void);
@@ -154,7 +158,6 @@ static void MX_UCPD1_Init(void)
   /* USER CODE BEGIN UCPD1_Init 2 */
 
   /* USER CODE END UCPD1_Init 2 */
-
 }
 
 /**
@@ -176,24 +179,37 @@ static void MX_DMA_Init(void)
 }
 
 
+bool mainGetAuthState(void) { return mainAuthState; }
 
-/* USER CODE BEGIN 4 */
+void mainSetEvents(uint32_t event)
+{
+	uint32_t primask;
+	targetGetInterruptState(primask);
+	targetDisableInterrupts();
 
-/* USER CODE END 4 */
+	mainEvents |= event;
+	targetRestoreInterruptState(primask);
+}
 
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+void mainClearEvents(uint32_t event)
+{
+	uint32_t primask;
+	targetGetInterruptState(primask);
+	targetDisableInterrupts();
+
+	mainEvents &= ~event;
+	targetRestoreInterruptState(primask);
+}
+
+void mainReboot(bool forceDfu)
+{
+	UNUSED(forceDfu);
+}
+
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
-  while (1)
-  {
-  }
-  /* USER CODE END Error_Handler_Debug */
+  while (1) {}
 }
 #ifdef USE_FULL_ASSERT
 /**

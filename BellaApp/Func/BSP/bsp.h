@@ -55,6 +55,12 @@
 #define ORION_UART_RATE					1000000
 #define ORION_UART_IRQ_PRIORITY			1
 
+// Orion interface
+#define ORION_DATA_CONSUMER_DISC_THRESHOLD  300   	//mV
+#define ORION_POWER_PRESENT_THRESHOLD       3000   	//mV
+#define ORION_POWER_REMOVAL_THRESHOLD       2700   	//mV
+#define ORION_POWER_DISCHARGE_THRESHOLD    	800   	//mV
+
 
 extern uint8_t hwVersion;
 
@@ -87,9 +93,6 @@ typedef enum {
 void bspSetDataEnable(bool enable);
 void bspSetAccPower(bool enable, bool highPower);
 bool bspGetOrionPowerIsHighPowerIn(void);
-void bspMozartPower(bool enable);
-void bspConfigureWakeEvents(void);
-void bspSystemStop(void);
 void bspOrionDetach(bool reset);
 
 void bspSetOrionPull(orionLineState_t state);
@@ -98,7 +101,6 @@ uint8_t bspPowerAvailable(orionPowerSource_t power);
 uint32_t bspGetOrionVbusVoltage(void);
 void bspSetOrionThreshold(bspOrionThresh_t threshold);
 uint8_t bspSinkEnable(uint8_t enable);
-void bspEnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry);
 
 
 #endif /* BSP_BSP_H_ */

@@ -205,10 +205,10 @@ void testHarnessService(void)
 			case CMD_VI:
 				sprintf(&testResponse[0],
 						"VBUS0 \t= %d mV\nVB0_GO \t= %d mV\nIBUS0 \t= %d mA\nVori \t= %d mV",
-						ReadAdcVBUS(PORT0),
+						(int)ReadAdcVBUS(PORT0),
 						ReadInaVoltage(),
 						ReadInaCurrent(),
-						ReadAdcVBUS(ORION));
+						(int)ReadAdcVBUS(ORION));
 				break;
 
 			case CMD_SW:

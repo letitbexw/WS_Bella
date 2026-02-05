@@ -15,6 +15,6 @@ enum {
 };
 
 void adcInit(void);
-int ReadAdcVBUS(uint8_t port);
+uint32_t ReadAdcVBUS(uint8_t port);
 
 #endif /* DRIVER_ADC_H_ */

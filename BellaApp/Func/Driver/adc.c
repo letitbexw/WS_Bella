@@ -41,7 +41,7 @@ void adcInit(void)
 	if (HAL_ADC_Init(&hadc1) != HAL_OK) { Error_Handler(); }
 }
 
-int ReadAdcVBUS(uint8_t port)
+uint32_t ReadAdcVBUS(uint8_t port)
 {
 	ADC_ChannelConfTypeDef sConfig = {0};
 	uint32_t mV;
@@ -54,5 +54,5 @@ int ReadAdcVBUS(uint8_t port)
 	HAL_ADC_PollForConversion(&hadc1, ADC_CONVERSION_TIMEOUT);
 	mV = HAL_ADC_GetValue(&hadc1) * ADC_AMAX * (330 + 50) / (4096 * 50);
 	HAL_ADC_Stop(&hadc1);
-	return (int)mV;
+	return mV;
 }

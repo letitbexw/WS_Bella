@@ -17,7 +17,7 @@
 typedef struct _IDIO_IF_PROP
 {
 	UART_HandleTypeDef* uartHandle;
-	void    (*init)              (UART_HandleTypeDef* uartHandle, uint32_t baud);
+	void    (*init)              (UART_HandleTypeDef* uartHandle);
 	int     (*rx)                (uint16_t* x);
 	int     (*tx)                (uint16_t x);
 	int     (*txBuffer)          (const uint8_t* x, uint8_t length);

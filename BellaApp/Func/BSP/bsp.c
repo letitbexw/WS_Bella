@@ -13,6 +13,7 @@
 #include "timers.h"
 #include "adc.h"
 #include "idbus_uart.h"
+#include "wdt.h"
 
 
 uint8_t hwVersion;
@@ -123,4 +124,144 @@ void bspInit(void)
 }
 
 
+void bspSetDataEnable(bool enable)
+{
+	if (enable) { HAL_GPIO_WritePin(ORION_DATA_ENABLE, GPIO_PIN_SET); }
+	else        { HAL_GPIO_WritePin(ORION_DATA_ENABLE, GPIO_PIN_RESET); }
+}
+
+void bspSetAccPower(bool enable, bool highPower)
+{
+	// ACC power is always on
+	UNUSED(enable);
+	UNUSED(highPower);
+}
+
+void bspOrionDetach(bool reset)
+{
+	bspSetAccPower(false, false);
+	bspSetDataEnable(false);
+	if (getOrionState() == orionStateConsumer)
+	{
+		HAL_GPIO_WritePin(AID_PD_EN, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(AID_PU_EN_L, GPIO_PIN_RESET);		// PU
+	}
+	else
+	{
+		HAL_GPIO_WritePin(AID_PD_EN, GPIO_PIN_SET);			// PD
+		HAL_GPIO_WritePin(AID_PU_EN_L, GPIO_PIN_SET);
+	}
+	if (reset)
+	{
+		wdtService();
+		tmrDelay_ms(50);
+		wdtService();
+		tmrDelay_ms(50);
+		HAL_NVIC_SystemReset();
+	}
+}
+
+void bspSetOrionPull(orionLineState_t state)
+{
+	//DEBUG_PRINT_BOARD("set pull, s=%d", state);
+	// @TODO: these changes should be atomic at the pin level
+	switch (state)
+	{
+    	case orionLinePullUp:
+    		HAL_GPIO_WritePin(AID_PU_EN_L, GPIO_PIN_RESET);		// PU
+    		HAL_GPIO_WritePin(AID_PD_EN, GPIO_PIN_RESET);
+        break;
+
+    	case orionLinePullDown:
+    	case orionLineMagicPullDown:
+    		HAL_GPIO_WritePin(AID_PU_EN_L, GPIO_PIN_SET);
+    		HAL_GPIO_WritePin(AID_PD_EN, GPIO_PIN_SET);			// PD
+    		break;
+
+    	case orionLineNone:
+    	default:
+    		HAL_GPIO_WritePin(AID_PU_EN_L, GPIO_PIN_SET);
+    		HAL_GPIO_WritePin(AID_PD_EN, GPIO_PIN_RESET);
+    		break;
+	}
+}
+
+/**
+  * @brief  This function is called to set the power switches for the interface.
+  * @param  source
+  *           if source = none, we are a consumer
+  * @retval None
+  */
+void bspSetOrionPower(orionPowerSource_t source, uint8_t highPower)
+{
+	//DEBUG_PRINT_BOARD("set source, s=%d, %s", source, highPower ? "hp" : "lp");
+	switch (source)
+	{
+    	default:
+    	case orionPowerSourceNone:
+    		bspSetAccPower(true, true);
+    		HAL_GPIO_WritePin(PSEN_ORION, 	GPIO_PIN_RESET);
+    		HAL_GPIO_WritePin(USBC_LPEN, 	GPIO_PIN_RESET);
+    		HAL_GPIO_WritePin(USBC_HPEN, 	GPIO_PIN_RESET);
+    		HAL_GPIO_WritePin(DISCH_ORION, GPIO_PIN_RESET);
+    		break;
+
+    	case orionPowerSourceDrain:
+    		bspSetAccPower(false, false);
+    		HAL_GPIO_WritePin(PSEN_ORION, 	GPIO_PIN_RESET);
+    		HAL_GPIO_WritePin(USBC_LPEN, 	GPIO_PIN_RESET);
+    		HAL_GPIO_WritePin(USBC_HPEN, 	GPIO_PIN_RESET);
+    		HAL_GPIO_WritePin(DISCH_ORION, GPIO_PIN_SET);		//PD
+    		break;
+
+    	case orionPowerSourceEnable:
+    		bspSetAccPower(false, false);
+    		HAL_GPIO_WritePin(DISCH_ORION, GPIO_PIN_RESET);
+    		HAL_GPIO_WritePin(USBC_LPEN, 	highPower? GPIO_PIN_RESET : GPIO_PIN_SET);
+    		HAL_GPIO_WritePin(USBC_HPEN, 	highPower? GPIO_PIN_SET : GPIO_PIN_RESET);
+    		HAL_GPIO_WritePin(PSEN_ORION, 	GPIO_PIN_SET);
+    		break;
+	}
+}
+
+bool bspGetOrionPowerIsHighPowerIn(void)
+{
+	return HAL_GPIO_ReadPin(PSEN_ORION) && HAL_GPIO_ReadPin(USBC_HPEN);
+}
+
+uint8_t bspPowerAvailable(orionPowerSource_t power)
+{
+	return getOrionPowerSource() == orionPowerSourceEnable;
+}
+
+uint32_t bspGetOrionVbusVoltage(void)
+{
+	return ReadAdcVBUS(ORION);
+}
+
+void bspSetOrionThreshold(bspOrionThresh_t threshold)
+{
+	switch (threshold)
+	{
+	case bspOrionThreshHigh:   // 1V5 (ext PB1)
+		hcompOrion.Init.InputMinus = COMP_INPUT_PLUS_IO2;
+		break;
+	case bspOrionThreshMed:    // 1V2 (Vref Int)
+		hcompOrion.Init.InputMinus = COMP_INPUT_MINUS_VREFINT;
+		break;
+	case bspOrionThreshLow:    // 0V9 (3/4 Vref Int)
+	default:
+		hcompOrion.Init.InputMinus = COMP_INPUT_MINUS_3_4VREFINT;
+		break;
+	}
+	HAL_COMP_Stop(&hcompOrion);
+	HAL_COMP_Init(&hcompOrion);
+	HAL_COMP_Start(&hcompOrion);
+}
+
+uint8_t bspSinkEnable(uint8_t enable)
+{
+	//DEBUG_PRINT_BOARD("sink %s", enable ? "enabled" : "disabled");
+	return true;
+}
 

@@ -8,7 +8,8 @@
 
 #include "config.h"
 #include "utils.h"
-#include <ctype.h>
+#include "target.h"
+
 
 const unsigned char dec2hex[] = "0123456789ABCDEF";
 
