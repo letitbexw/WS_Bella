@@ -105,6 +105,8 @@ uint8_t getOrionAIDState(void);
 orionPowerSource_t getOrionPowerSource(void);
 uint8_t setOrionPowerSource(orionPowerSource_t source);
 uint16_t getOrionDataIdleLevel(void);
+uint8_t getOrionDataAboveRMThreshold(void);
+uint8_t getOrionDataAboveRxThreshold(void);
 
 void orionRxWake(void);
 

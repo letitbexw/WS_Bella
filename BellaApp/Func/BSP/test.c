@@ -45,7 +45,7 @@ typedef struct {
 static const TestCommandTable testCommandTable[] = {
 	[0]={ .cmdIdx=CMD_VERSION, 		"VER", 		.cmdStrMaxLen=3, 	"<Bella-0.0.0-0>" 	},
 	[1]={ .cmdIdx=CMD_RESET, 		"RST", 		.cmdStrMaxLen=3, 	"" 					},
-	[2]={ .cmdIdx=CMD_ECHO, 		"ECHO-", 	.cmdStrMaxLen=5, 	"<echo-0>" 			},
+	[2]={ .cmdIdx=CMD_ECHO, 		"ECHO-", 	.cmdStrMaxLen=6, 	"<echo-0>" 			},
 	[3]={ .cmdIdx=CMD_MLB_SER_NUM, 	"MSN", 		.cmdStrMaxLen=3, 	"<msn-" 			},
 	[4]={ .cmdIdx=CMD_LOCK_SWD, 	"LKS",		.cmdStrMaxLen=3, 	"<lks-0000-0" 		},
 	[5]={ .cmdIdx=CMD_VI, 			"VI",		.cmdStrMaxLen=2, 	"" 					},
@@ -207,7 +207,7 @@ void testHarnessService(void)
 
 			case CMD_VI:
 				sprintf(&testResponse[0],
-						"VBUS0 \t= %d mV\nVB0_GO \t= %d mV\nIBUS0 \t= %d mA\nVORION \t= %d mV",
+						"VBUS0 \t= %d mV\n\tVB0_GO \t= %d mV\n\tIBUS0 \t= %d mA\n\tVORION \t= %d mV",
 						(int)ReadAdcVBUS(PORT0),
 						ReadInaVoltage(),
 						ReadInaCurrent(),
@@ -227,7 +227,7 @@ void testHarnessService(void)
 					else if (testCommand[6] == '0') HAL_GPIO_WritePin(USBC_LPEN, GPIO_PIN_RESET);
 				}
 				sprintf(&testResponse[0],
-						"PSEN_P0 \t= %d\nPSEN_ORION \t= %d\nUSBC_HPEN \t= %d\nUSBC_LPEN \t= %d",
+						"PSEN_P0 \t= %d\n\tPSEN_ORION \t= %d\n\tUSBC_HPEN \t= %d\n\tUSBC_LPEN \t= %d",
 						HAL_GPIO_ReadPin(PSEN_P0),
 						HAL_GPIO_ReadPin(PSEN_ORION),
 						HAL_GPIO_ReadPin(USBC_HPEN),
@@ -235,7 +235,7 @@ void testHarnessService(void)
 				break;
 
 			case CMD_IN:
-				sprintf(&testResponse[0],"USBC_LPOC \t= %d\nREMOVAL_DET_L \t= %d",
+				sprintf(&testResponse[0],"USBC_LPOC \t= %d\n\tREMOVAL_DET_L \t= %d",
 						HAL_GPIO_ReadPin(USBC_LPOC),
 						HAL_GPIO_ReadPin(REMOVAL_DET_L));
 				break;
@@ -263,7 +263,7 @@ void testHarnessService(void)
 					else if (testCommand[13] == '0') HAL_GPIO_WritePin(ORION_DATA_ENABLE, GPIO_PIN_RESET);
 				}
 				sprintf(&testResponse[0],
-						"AID_PU_EN_L \t= %d\nAID_PD_EN \t= %d\nLED_RGB \t= %d%d%d\nINA_EN \t\t= %d\nDISCH_ORION \t= %d\nMAGIC_PD_DIS \t= %d\nORION_DATA_ENABLE = %d",
+						"AID_PU_EN_L \t= %d\n\tAID_PD_EN \t= %d\n\tLED_RGB \t= %d%d%d\n\tINA_EN \t\t= %d\n\tDISCH_ORION \t= %d\n\tMAGIC_PD_DIS \t= %d\n\tORION_DATA_ENABLE = %d",
 						HAL_GPIO_ReadPin(AID_PU_EN_L),
 						HAL_GPIO_ReadPin(AID_PD_EN),
 						HAL_GPIO_ReadPin(LED_RED),
@@ -276,10 +276,10 @@ void testHarnessService(void)
 				break;
 
 			case CMD_ORI:
-				if (getOrionDataAboveRMThreshold()) 		{ sprintf(&testResponse[0], "data > 2.4V\nVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
+				if (getOrionDataAboveRMThreshold()) 		{ sprintf(&testResponse[0], "data > 2.4V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
 				else {
-					if (getOrionDataAboveRxThreshold()) 	{ sprintf(&testResponse[0], "1.5V < data < 2.4V\nVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
-					else 									{ sprintf(&testResponse[0], "data < 1.5V\nVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
+					if (getOrionDataAboveRxThreshold()) 	{ sprintf(&testResponse[0], "1.5V < data < 2.4V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
+					else 									{ sprintf(&testResponse[0], "data < 1.5V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
 				}
 				break;
 
@@ -291,7 +291,7 @@ void testHarnessService(void)
 		if (err) { strncpy(testResponse, respErrorStr, sizeof(testResponse)); }
 
 		if (echoOn) { printf("\n"); }
-		printf("%s\n", testResponse);
+		printf("\t%s\n", testResponse);
 		if (cmd == CMD_RESET) { HAL_Delay(100); HAL_NVIC_SystemReset(); }
 	}
 }

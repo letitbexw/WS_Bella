@@ -31,7 +31,7 @@
 
 
 
-#define CNFG_WATCHDOG_ENABLED
+//#define CNFG_WATCHDOG_ENABLED
 
 /* System Timers */
 #define HF_TIMER               			TIM6

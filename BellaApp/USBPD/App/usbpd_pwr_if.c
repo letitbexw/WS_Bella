@@ -31,39 +31,7 @@
 #include "usbpd_trace.h"
 #endif /* _TRACE */
 #include "string.h"
-/* USER CODE BEGIN Include */
 
-/* USER CODE END Include */
-
-/** @addtogroup STM32_USBPD_APPLICATION
-  * @{
-  */
-
-/** @addtogroup STM32_USBPD_APPLICATION_POWER_IF
-  * @{
-  */
-
-/* Private typedef -----------------------------------------------------------*/
-/** @addtogroup STM32_USBPD_APPLICATION_POWER_IF_Private_TypeDef
-  * @{
-  */
-/* USER CODE BEGIN Private_Typedef */
-
-/* USER CODE END Private_Typedef */
-/**
-  * @}
-  */
-
-/* Private define ------------------------------------------------------------*/
-/** @addtogroup STM32_USBPD_APPLICATION_POWER_IF_Private_Defines
-  * @{
-  */
-/* USER CODE BEGIN Private_Define */
-
-/* USER CODE END Private_Define */
-/**
-  * @}
-  */
 
 /* Private macros ------------------------------------------------------------*/
 /** @addtogroup STM32_USBPD_APPLICATION_POWER_IF_Private_Macros
@@ -74,49 +42,18 @@
 #else
 #define PWR_IF_DEBUG_TRACE(_PORT_, __MESSAGE__)
 #endif /* _TRACE */
-/* USER CODE BEGIN Private_Macro */
 
-/* USER CODE END Private_Macro */
-/**
-  * @}
-  */
 
-/* Private variables ---------------------------------------------------------*/
-/** @addtogroup STM32_USBPD_APPLICATION_POWER_IF_Private_Variables
-  * @{
-  */
-/* USER CODE BEGIN Private_Variables */
+USBPD_PWR_Port_PDO_Storage_TypeDef PWR_Port_PDO_Storage[USBPD_PORT_COUNT];
 
-/* USER CODE END Private_Variables */
-/**
-  * @}
-  */
 
-/* Private function prototypes -----------------------------------------------*/
-/** @addtogroup STM32_USBPD_APPLICATION_POWER_IF_Private_Functions
-  * @{
-  */
-/* USER CODE BEGIN USBPD_USER_PRIVATE_FUNCTIONS_Prototypes */
-
-/* USER CODE END USBPD_USER_PRIVATE_FUNCTIONS_Prototypes */
-/**
-  * @}
-  */
-
-/** @addtogroup STM32_USBPD_APPLICATION_POWER_IF_Exported_Functions
-  * @{
-  */
-
-/**
-  * @brief  Initialize structures and variables related to power board profiles
-  *         used by Sink and Source, for all available ports.
-  * @retval USBPD status
-  */
 USBPD_StatusTypeDef USBPD_PWR_IF_Init(void)
 {
-/* USER CODE BEGIN USBPD_PWR_IF_Init */
-  return USBPD_ERROR;
-/* USER CODE END USBPD_PWR_IF_Init */
+	PWR_Port_PDO_Storage[USBPD_PORT_0].SinkPDO.ListOfPDO   = (uint32_t *) PORT0_PDO_ListSNK;
+	PWR_Port_PDO_Storage[USBPD_PORT_0].SinkPDO.NumberOfPDO = &USBPD_NbPDO[0];
+	PWR_Port_PDO_Storage[USBPD_PORT_0].SrcPDO.ListOfPDO    = (uint32_t *) PORT0_PDO_ListSRC;
+	PWR_Port_PDO_Storage[USBPD_PORT_0].SrcPDO.NumberOfPDO  = &USBPD_NbPDO[1];
+	return USBPD_OK;
 }
 
 /**
