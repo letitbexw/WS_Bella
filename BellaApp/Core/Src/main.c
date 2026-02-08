@@ -24,11 +24,13 @@
 #include "test.h"
 #include "adc.h"
 #include "wdt.h"
-#include "ucpd.h"
 #include "usbpd.h"
+#include "usbpd_dpm_user.h"
 #include "usb_device.h"
 #include "target.h"
 
+
+#define BTN_DEBOUNCE_TIME 	30
 
 UART_HandleTypeDef idbusUartHandle;
 
@@ -36,6 +38,28 @@ volatile uint32_t mainEvents = 0;
 static bool mainAuthState = false;
 
 /* Private function prototypes -----------------------------------------------*/
+
+static void ButtonEvent(void)
+{
+	static uint32_t tBtnPressed = 0;
+
+	if (HAL_GPIO_ReadPin(BTN_OK) == GPIO_PIN_RESET && !mainCheckEvents(MAIN_EVENT_BTNPRESSED))
+	{
+		mainSetEvents(MAIN_EVENT_BTNPRESSED);
+		tBtnPressed = HAL_GetTick();
+	}
+	if (HAL_GPIO_ReadPin(BTN_OK) == GPIO_PIN_SET && mainCheckEvents(MAIN_EVENT_BTNPRESSED))
+	{
+		// Button released
+		if (HAL_GetTick() - tBtnPressed > BTN_DEBOUNCE_TIME)
+		{
+			HAL_GPIO_TogglePin(LED_GRN);
+			USBPD_SetRequestedVoltage(9000);
+			USBPD_DPM_RequestGetSourceCapability(USBPD_PORT_0);
+			mainClearEvents(MAIN_EVENT_BTNPRESSED);
+		}
+	}
+}
 
 
 int main(void)
@@ -50,16 +74,18 @@ int main(void)
 	idioInit();
 	adcInit();
 	ucpdInit();
-
 //  MX_USB_Device_Init();
-
-	MX_USBPD_Init();
 	wdtInit();
+
+	__enable_irq();
 
 	while (1)
 	{
+		USBPD_DPM_Run();
 		testHarnessService();
+		ButtonEvent();
 		wdtService();
+		HAL_Delay(1);
 	}
 }
 

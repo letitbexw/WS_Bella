@@ -18,6 +18,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbpd_hw_if.h"
+#include "adc.h"
+#include "ina219.h"
 
 
 #define _USBPD_POWER_DEBUG
@@ -47,16 +49,18 @@ USBPD_StatusTypeDef HW_IF_PWR_SetVoltage(uint8_t PortNum, uint16_t voltage)
 
 uint16_t HW_IF_PWR_GetVoltage(uint8_t PortNum)
 {
-  uint32_t _voltage;
-  BSP_USBPD_PWR_VBUSGetVoltage(PortNum, &_voltage);
-  return (uint16_t)_voltage;
+	uint32_t _voltage;
+//	BSP_USBPD_PWR_VBUSGetVoltage(PortNum, &_voltage);
+	_voltage = (uint16_t)ReadAdcVBUS(PortNum);
+	return (uint16_t)_voltage;
 }
 
 int16_t HW_IF_PWR_GetCurrent(uint8_t PortNum)
 {
-  int32_t _current;
-  BSP_USBPD_PWR_VBUSGetCurrent(PortNum, &_current);
-  return (int16_t)_current;
+	int32_t _current;
+//	BSP_USBPD_PWR_VBUSGetCurrent(PortNum, &_current);
+	_current = ReadInaCurrent();
+	return (int16_t)_current;
 }
 
 #if defined(_SRC) || defined(_DRP)

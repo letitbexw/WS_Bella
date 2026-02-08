@@ -274,6 +274,7 @@ typedef void USBPD_PWR_VBUSDetectCallbackFunc(uint32_t Instance,
 /** @defgroup POWER_Exported_Functions Exported Functions (BSP V1)
   * @{
   */
+
 PWR_StatusTypeDef BSP_PWR_VBUSInit(uint32_t PortId);
 
 PWR_StatusTypeDef BSP_PWR_VBUSDeInit(uint32_t PortId);

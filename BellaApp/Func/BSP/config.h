@@ -30,7 +30,7 @@
 #define CNFG_HW_REVISION              	0               // Revision number
 
 
-
+#define DEBUG_ENABLED
 //#define CNFG_WATCHDOG_ENABLED
 
 /* System Timers */

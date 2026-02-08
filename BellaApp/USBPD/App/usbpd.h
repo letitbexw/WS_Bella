@@ -31,19 +31,9 @@
 #include "usbpd_dpm_conf.h"
 #include "usbpd_hw_if.h"
 
-/* USER CODE BEGIN 0 */
-/* USER CODE END 0 */
-
-/* Global variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN 1 */
-/* USER CODE END 1 */
 
 /* USBPD init function */
-void MX_USBPD_Init(void);
-
-/* USER CODE BEGIN 2 */
-/* USER CODE END 2 */
+void ucpdInit(void);
 
 #ifdef __cplusplus
 }

@@ -40,6 +40,7 @@ extern volatile uint32_t defaultDebugPrintFlags;
 //#define CNFG_DEBUG_IAP2_HID_ENABLED
 //#define CNFG_DEBUG_IDIO_EP_AID_PD_ENABLED
 //#define CNFG_DEBUG_ORION_ENABLED
+#define CNFG_DEBUG_USBPD_ENABLED
 #endif // DEBUG_ENABLED
 
 // Control Bits
@@ -54,6 +55,7 @@ extern volatile uint32_t defaultDebugPrintFlags;
 #define CNFG_DEBUG_IAP2_HID_PRINT_ENABLED                   (1UL << 8)
 #define CNFG_DEBUG_AIDPD_PRINT_ENABLED                      (1UL << 9)
 #define CNFG_DEBUG_ORION_PRINT_ENABLED                      (1UL << 10)
+#define CNFG_DEBUG_USBPD_PRINT_ENABLED						(1UL << 11)
 
 #define configDebugErrorPrintEnabled()                      (CNFG_DEBUG_ERROR_PRINT_ENABLED & debugPrintFlags)
 #define configDebugBoardPrintEnabled()                      (CNFG_DEBUG_BOARD_PRINT_ENABLED & debugPrintFlags)
@@ -69,9 +71,10 @@ extern volatile uint32_t defaultDebugPrintFlags;
 #define configDebugAidPDPrintEnabled()                      (CNFG_DEBUG_AIDPD_PRINT_ENABLED & debugPrintFlags)
 
 #define configDebugOrionPrintEnabled()                      (CNFG_DEBUG_ORION_PRINT_ENABLED & debugPrintFlags)
+#define configDebugUsbpdPrintEnabled()						(CNFG_DEBUG_USBPD_PRINT_ENABLED & debugPrintFlags)
 
 #ifdef DEBUG_ENABLED
-#define debugPrint(fmt, ...) { printf("[%08u] %d: " fmt "\n", GetTickCount(), __LINE__, ##__VA_ARGS__); }
+#define debugPrint(fmt, ...) { printf("[%08u] %d: " fmt "\n", (unsigned int)GetTickCount(), __LINE__, ##__VA_ARGS__); }
 #else
 #define debugPrint(fmt, ...)
 #endif
@@ -140,6 +143,12 @@ extern volatile uint32_t defaultDebugPrintFlags;
 #define DEBUG_PRINT_ORION(fmt, ...) if (configDebugOrionPrintEnabled()) { debugPrint("OR: " fmt, ##__VA_ARGS__); }
 #else
 #define DEBUG_PRINT_ORION(fmt, ...)
+#endif
+
+#ifdef CNFG_DEBUG_USBPD_ENABLED
+#define DEBUG_PRINT_USBPD(fmt, ...) if (configDebugUsbpdPrintEnabled()) { debugPrint("USBPD: " fmt, ##__VA_ARGS__); }
+#else
+#define DEBUG_PRINT_USBPD(fmt, ...)
 #endif
 
 
