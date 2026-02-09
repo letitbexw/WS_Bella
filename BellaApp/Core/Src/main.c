@@ -28,6 +28,7 @@
 #include "usbpd_dpm_user.h"
 #include "usb_device.h"
 #include "target.h"
+#include "debug.h"
 
 
 #define BTN_DEBOUNCE_TIME 	30
@@ -69,6 +70,7 @@ int main(void)
 	tmrInit();
 	uartDebugInit();
 	testInit();
+	debugInit();
 
 	idbusUartHandle.Instance = ORION_UART_BASE_PTR;
 	idioInit();

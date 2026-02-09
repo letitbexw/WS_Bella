@@ -151,6 +151,7 @@ extern volatile uint32_t defaultDebugPrintFlags;
 #define DEBUG_PRINT_USBPD(fmt, ...)
 #endif
 
+void debugInit(void);
 
 // Print the Hex Table Header
 void debugPrintHexTableHeader(void);
