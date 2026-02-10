@@ -53,7 +53,9 @@
 									<listOptionValue builtIn="false" value="../USB_Device/Target"/>
 									<listOptionValue builtIn="false" value="../Core/Inc"/>
 									<listOptionValue builtIn="false" value="../Func/BSP"/>
+									<listOptionValue builtIn="false" value="../Func/Acc"/>
 									<listOptionValue builtIn="false" value="../Func/Core"/>
+									<listOptionValue builtIn="false" value="../Func/Common"/>
 									<listOptionValue builtIn="false" value="../Func/Driver"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32G0xx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32G0xx_HAL_Driver/Inc/Legacy"/>

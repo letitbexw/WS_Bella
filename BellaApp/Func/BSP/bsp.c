@@ -118,7 +118,7 @@ void bspInit(void)
 	SystemClock_Config();
 	gpioInit();
 	compInit();
-	I2C_MasterInit(&hi2c1, I2C1, 0xC12166);		/* 0x10B17DB5 --> 100kHz, 0xC12166 --> 400kHz */
+	I2C_MasterInit(&hi2c1, I2C1, 0xC12166);			/* 0x10B17DB5 --> 100kHz, 0xC12166 --> 400kHz */
 	WriteInaReg(REG_CONFIG, 0x299F);				// Set shunt range to be +-80mV,
 	WriteInaReg(REG_CALIBRATION, 25600);
 }

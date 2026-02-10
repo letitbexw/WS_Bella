@@ -29,6 +29,8 @@
 #define CNFG_HW_VERSION_MIN           	0               // Minor version number
 #define CNFG_HW_REVISION              	0               // Revision number
 
+#define CNFG_AID_BULK_DATA_VERSION     	0x00
+#define CNFG_HID_ENDPOINTS_MAX          2
 
 #define DEBUG_ENABLED
 //#define CNFG_WATCHDOG_ENABLED
@@ -58,11 +60,11 @@
 #define CNFG_AID_HAS_BULK_DATA                                  	// IDIO responds to BULK DATA commands
 #ifdef CNFG_AID_HAS_BULK_DATA
 #define CNFG_AID_BULK_DATA_PAD_DATA   		0xFF                 	// pad BD ReadResponse unused byte with this value
-#define CNFG_AID_HAS_BULK_DATA_DEVICE_CTL                        	// IDIO responds to BULK DATA DEVICE CONTROL commands
-#define CNFG_AID_BULK_DATA_AUTH                                  	// IDIO exposes Mozart for iOS raw control
-#define CNFG_AID_HAS_BULK_DATA_IAP2                              	// IDIO responds to BULK DATA IAP commands
-#define CNFG_AID_HAS_BULK_DATA_HID                               	// IDIO responds to BULK DATA HID commands
-#define CNFG_AID_HAS_BULK_DATA_EA                                	// IDIO responds to BULK DATA EA commands
+//#define CNFG_AID_HAS_BULK_DATA_DEVICE_CTL                        	// IDIO responds to BULK DATA DEVICE CONTROL commands
+//#define CNFG_AID_BULK_DATA_AUTH                                  	// IDIO exposes Mozart for iOS raw control
+//#define CNFG_AID_HAS_BULK_DATA_IAP2                              	// IDIO responds to BULK DATA IAP commands
+//#define CNFG_AID_HAS_BULK_DATA_HID                               	// IDIO responds to BULK DATA HID commands
+//#define CNFG_AID_HAS_BULK_DATA_EA                                	// IDIO responds to BULK DATA EA commands
 #define CNFG_AID_HAS_BULK_DATA_PD                                	// IDIO responds to BULK DATA PD commands
 #endif
 
