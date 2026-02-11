@@ -9,6 +9,7 @@
 #include "config.h"
 #include "bsp.h"
 #include "debug_uart.h"
+#include "idbus_uart.h"
 #include "sn.h"
 #include "timers.h"
 #include "adc.h"
@@ -128,6 +129,8 @@ static void Selftest(void)
 	HAL_GPIO_WritePin(DEBUG_OUT, GPIO_PIN_RESET);
 	tmrDelay_us(20);
 	HAL_GPIO_WritePin(DEBUG_OUT, GPIO_PIN_SET);
+
+
 }
 
 
@@ -137,7 +140,19 @@ void testInit(void)
 	rxState = 255;
 
 	Selftest();
+	HAL_Delay(100);
 	printf("\n%s %s-%d.%d.%d-%d.%s\n",CNFG_ACCESSORY_MODEL_NUMBER, CNFG_ACCESSORY_MODEL_NUMBER, CNFG_FW_VERSION_MAJ, CNFG_FW_VERSION_MIN, CNFG_FW_REVISION, hwVersion, CNFG_BUILD_INFO);
+
+//	printf("idbus TX = 0x%X\n", idbusTx(0x11));
+	HAL_Delay(100);
+	uint16_t rx;
+	if (idbusRx(&rx))	printf("received idbus rx = 0x%X\n", rx);
+	else				printf("Nothing received.\n");
+
+	printf("idbus TX = 0x%X\n", idbusTx(0x11));
+	HAL_Delay(100);
+	if (idbusRx(&rx))	printf("received idbus rx = 0x%X\n", rx);
+	else				printf("Nothing received.\n");
 }
 
 void testHarnessService(void)

@@ -66,7 +66,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	}
 	else if (huart->Instance == ORION_UART_BASE_PTR)
 	{
-//		uartIdbusTxComplete();
+//		idbusUARTTxComplete();
 	}
 }
 

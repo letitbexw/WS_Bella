@@ -43,7 +43,7 @@ volatile uint32_t mainEvents = 0;
 
 static uint8_t aidActive = false;
 //static uint8_t iap2Events = 0;
-static bool mainAuthState = false;
+static bool mainAuthState = true;	// XW
 
 static void mainEventService(void);
 static void mainServiceIap2(void);
@@ -98,7 +98,6 @@ int main(void)
 	bspInit();
 	tmrInit();
 	uartDebugInit();
-	testInit();
 	debugInit();
 
 	idbusUartHandle.Instance = ORION_UART_BASE_PTR;
@@ -123,6 +122,8 @@ int main(void)
 
 	__enable_irq();
 
+	testInit();	// for some testing
+
 	while (1)
 	{
 		wdtService();
@@ -134,7 +135,7 @@ int main(void)
 		mainEventService();
 
 		if (iapRun) { mainServiceIap2(); }
-		if (idioBulkDataIsEnabled())
+		else if (idioBulkDataIsEnabled())
 		{
 			orionState_t orionState = getOrionState();
 			if (tBulkData == 0)
@@ -189,7 +190,7 @@ int main(void)
 			setOrionState(orionStateSoftReset);
 		}
 
-		HAL_Delay(1);
+//		HAL_Delay(1);
 	}
 }
 
