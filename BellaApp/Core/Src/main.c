@@ -21,6 +21,7 @@
 #include "timers.h"
 #include "debug_uart.h"
 #include "idio.h"
+#include "idbus_uart.h"
 #include "test.h"
 #include "adc.h"
 #include "wdt.h"
@@ -31,6 +32,7 @@
 #include "debug.h"
 #include "aid_pd.h"
 #include "idio_bulk_data.h"
+#include "acc.h"
 
 
 #define BTN_DEBOUNCE_TIME 	30
@@ -44,7 +46,7 @@ static uint8_t aidActive = false;
 static bool mainAuthState = false;
 
 static void mainEventService(void);
-//static void mainServiceIap2(void);
+static void mainServiceIap2(void);
 
 static bool iapRun = false;
 static bool accRun = false;
@@ -131,7 +133,7 @@ int main(void)
 		orionService();
 		mainEventService();
 
-//		if (iapRun) { mainServiceIap2(); }
+		if (iapRun) { mainServiceIap2(); }
 		if (idioBulkDataIsEnabled())
 		{
 			orionState_t orionState = getOrionState();

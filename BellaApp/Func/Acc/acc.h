@@ -10,9 +10,8 @@
 
 
 // Identifier values
-
 #define ACC_PARAM_X533_PROTOCOL           		0x01
-#define ACC_PARAM_X533_REVISION          		0x02
+#define ACC_PARAM_X533_REVISION           		0x02
 #define ACC_PARAM_ID_IAP_OPT_SESSIONS     		0x03
 #define ACC_PARAM_ID_RESET_COMM           		0x04
 
