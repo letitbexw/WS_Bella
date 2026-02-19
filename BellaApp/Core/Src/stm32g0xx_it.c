@@ -54,8 +54,8 @@ void SysTick_Handler(void)
 
 void USART3_4_5_6_LPUART1_IRQHandler(void)
 {
-	HAL_UART_IRQHandler(&huartDbg);
 	idbusUartIrqHandler(&idbusUartHandle);
+	HAL_UART_IRQHandler(&huartDbg);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)

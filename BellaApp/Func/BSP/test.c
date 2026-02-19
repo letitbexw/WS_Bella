@@ -144,15 +144,17 @@ void testInit(void)
 	printf("\n%s %s-%d.%d.%d-%d.%s\n",CNFG_ACCESSORY_MODEL_NUMBER, CNFG_ACCESSORY_MODEL_NUMBER, CNFG_FW_VERSION_MAJ, CNFG_FW_VERSION_MIN, CNFG_FW_REVISION, hwVersion, CNFG_BUILD_INFO);
 
 //	printf("idbus TX = 0x%X\n", idbusTx(0x11));
-	HAL_Delay(100);
-	uint16_t rx;
-	if (idbusRx(&rx))	printf("received idbus rx = 0x%X\n", rx);
-	else				printf("Nothing received.\n");
-
-	printf("idbus TX = 0x%X\n", idbusTx(0x11));
-	HAL_Delay(100);
-	if (idbusRx(&rx))	printf("received idbus rx = 0x%X\n", rx);
-	else				printf("Nothing received.\n");
+//	HAL_Delay(100);
+//	uint16_t rx;
+//	if (idbusRx(&rx))	printf("received idbus rx = 0x%X\n", rx);
+//	else				printf("Nothing received.\n");
+//
+//	printf("idbus TX = 0x%X\n", idbusTx(0xFF));
+//	HAL_Delay(100);
+//	if (idbusRx(&rx))	printf("received idbus rx = 0x%X\n", rx);
+//	else				printf("Nothing received.\n");
+//
+//	while(1) { HAL_Delay(10);}
 }
 
 void testHarnessService(void)

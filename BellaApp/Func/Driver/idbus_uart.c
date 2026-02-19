@@ -108,7 +108,7 @@ HAL_StatusTypeDef idbusTransmit(UART_HandleTypeDef *huart, uint8_t *pData, uint1
 
 	/* Disable the UART Transmit Complete Interrupt */
 	__HAL_UART_DISABLE_IT(huart, UART_IT_TC);
-	huart->Instance->ICR |= USART_ICR_TCCF;
+	SET_BIT(huart->Instance->ICR, USART_ICR_TCCF);		// Clear transfer complete flag
 	/* Enable the UART Transmit Empty Interrupt. This kicks off an idle Tx */
 	__HAL_UART_ENABLE_IT(huart, UART_IT_TXE);
 
@@ -348,8 +348,8 @@ __inline static HAL_StatusTypeDef idbusRxHandler(UART_HandleTypeDef *huart)
 		/* Disable the UART Parity Error Interrupt */
 		__HAL_UART_DISABLE_IT(huart, UART_IT_PE);
 		/* Disable the UART Error Interrupt: (Frame error, noise error, overrun error) */
-		//__HAL_UART_DISABLE_IT(huart, UART_IT_ERR);
-		CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
+		__HAL_UART_DISABLE_IT(huart, UART_IT_ERR);
+//		CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 		huart->RxState = HAL_UART_STATE_READY;
 
 		idbusUARTRxComplete(huart);
@@ -376,7 +376,7 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 		/* UART in mode Transmitter (character sent)--------------------------------*/
 		if ((flags & USART_ISR_TC) != 0)
 		{
-			WRITE_REG(huart->Instance->ICR, USART_ICR_TCCF);
+			SET_BIT(huart->Instance->ICR, USART_ICR_TCCF);
 			/* Disable the UART Transmit Complete Interrupt */
 			__HAL_UART_DISABLE_IT(huart, UART_IT_TC);
 			__HAL_UART_DISABLE_IT(huart, UART_IT_TXE);
@@ -402,9 +402,9 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 		if ((flags & (USART_ISR_FE)) != 0)
 		{
 			// clear the framing error
-			WRITE_REG(huart->Instance->ICR, USART_ICR_FECF);
+			SET_BIT(huart->Instance->ICR, USART_ICR_FECF);
 			// clear Rx pending bit to drop charagter
-			WRITE_REG(huart->Instance->RQR, USART_RQR_RXFRQ);
+			SET_BIT(huart->Instance->RQR, USART_RQR_RXFRQ);
 			// @TODO: receiving break should stop transmission, if in progress
 			// @TODO: differentiate break and wake
 
@@ -423,14 +423,14 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 		else if ((flags & (UART_FLAG_ORE)) != 0)
 		{
 			// clear the framing error
-			WRITE_REG(huart->Instance->ICR, USART_ICR_ORECF);
+			SET_BIT(huart->Instance->ICR, USART_ICR_ORECF);
 			// clear Rx pending bit to drop charagter
-			WRITE_REG(huart->Instance->RQR, USART_RQR_RXFRQ);
+			SET_BIT(huart->Instance->RQR, USART_RQR_RXFRQ);
 		}
-		else if ((flags & USART_ISR_PE) != 0U)
-        {
-            WRITE_REG(huart->Instance->ICR, USART_ICR_PECF);
-        }
+//		else if ((flags & USART_ISR_PE) != 0U)
+//        {
+//			SET_BIT(huart->Instance->ICR, USART_ICR_PECF);
+//        }
 
 		// start new character read (will clear errors and return to Rx mode)
 		idbusReceive(huart, &idbusTmpRxBuff[0], 8);
@@ -472,12 +472,12 @@ void idbusDriveBusLow(uint32_t low_us)
 
 void idbusUartInit(UART_HandleTypeDef* huart)
 {
-	idioUartHandle = huart;
-	txIdle = true;
+	idioUartHandle 	= huart;
+	txIdle 			= true;
 
-	delayTxIdle = true;
-	rxSniff = false;
-	rxProcess = true;
+	delayTxIdle 	= true;
+	rxSniff 		= false;
+	rxProcess 		= true;
 
 	huart->Init.BaudRate 				= ORION_UART_RATE;
 	huart->Init.WordLength 				= UART_WORDLENGTH_8B;
@@ -516,7 +516,7 @@ void idbusMspInit(void)
 	__HAL_RCC_USART3_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 	initGPIO(ACC_AID_TX, GPIO_MODE_AF_PP, GPIO_NOPULL, 0, GPIO_AF4_USART3); /* PB8,  ACC_AID_TX */
-	initGPIO(ACC_AID_RX, GPIO_PULLUP, GPIO_NOPULL, 0, GPIO_AF4_USART3); 	/* PB9,  ACC_AID_RX */
+	initGPIO(ACC_AID_RX, GPIO_MODE_AF_PP, GPIO_PULLUP, 0, GPIO_AF4_USART3); 	/* PB9,  ACC_AID_RX */
 	HAL_NVIC_SetPriority(ORION_UART_IRQn, ORION_UART_IRQ_PRIORITY, 0);
 	HAL_NVIC_EnableIRQ(ORION_UART_IRQn);
 }
