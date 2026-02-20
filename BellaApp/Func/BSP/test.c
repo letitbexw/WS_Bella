@@ -124,13 +124,11 @@ static uint8_t findCommand(void)
 
 static void Selftest(void)
 {
-	HAL_GPIO_WritePin(DEBUG_OUT, GPIO_PIN_SET);
-	tmrDelay_us(10);
-	HAL_GPIO_WritePin(DEBUG_OUT, GPIO_PIN_RESET);
-	tmrDelay_us(20);
-	HAL_GPIO_WritePin(DEBUG_OUT, GPIO_PIN_SET);
-
-
+//	HAL_GPIO_WritePin(DEBUG_OUT, GPIO_PIN_SET);
+//	tmrDelay_us(10);
+//	HAL_GPIO_WritePin(DEBUG_OUT, GPIO_PIN_RESET);
+//	tmrDelay_us(20);
+//	HAL_GPIO_WritePin(DEBUG_OUT, GPIO_PIN_SET);
 }
 
 
@@ -140,7 +138,7 @@ void testInit(void)
 	rxState = 255;
 
 	Selftest();
-	HAL_Delay(100);
+//	HAL_Delay(100);
 	printf("\n%s %s-%d.%d.%d-%d.%s\n",CNFG_ACCESSORY_MODEL_NUMBER, CNFG_ACCESSORY_MODEL_NUMBER, CNFG_FW_VERSION_MAJ, CNFG_FW_VERSION_MIN, CNFG_FW_REVISION, hwVersion, CNFG_BUILD_INFO);
 
 //	printf("idbus TX = 0x%X\n", idbusTx(0x11));
@@ -149,7 +147,7 @@ void testInit(void)
 //	if (idbusRx(&rx))	printf("received idbus rx = 0x%X\n", rx);
 //	else				printf("Nothing received.\n");
 //
-//	printf("idbus TX = 0x%X\n", idbusTx(0xFF));
+//	printf("idbus TX = 0x%X\n", idbusTx(0x75));
 //	HAL_Delay(100);
 //	if (idbusRx(&rx))	printf("received idbus rx = 0x%X\n", rx);
 //	else				printf("Nothing received.\n");

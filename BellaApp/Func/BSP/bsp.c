@@ -67,7 +67,7 @@ void initGPIO(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint32_t Mode, uint32_t Pu
 	GPIO_InitStruct.Pin 		= GPIO_Pin;
 	GPIO_InitStruct.Mode 		= Mode;
 	GPIO_InitStruct.Pull 		= Pull;
-	GPIO_InitStruct.Speed 	 	= GPIO_SPEED_FREQ_HIGH;
+	GPIO_InitStruct.Speed 	 	= GPIO_SPEED_FREQ_VERY_HIGH;
 	GPIO_InitStruct.Alternate 	= Alternate;
 	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
 }

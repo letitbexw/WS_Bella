@@ -98,9 +98,9 @@ __STATIC_INLINE void idbusSetTimeOfLastActivityOnTheBus(void) { idbusTimeOfLastA
 HAL_StatusTypeDef idbusTransmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size)
 {
 	if((pData == NULL ) || (Size == 0)) 		{ return HAL_ERROR; }
-	if (huart->gState != HAL_UART_STATE_READY) 	{ return HAL_BUSY; }
+//	if (huart->gState != HAL_UART_STATE_READY) 	{ return HAL_BUSY; }
 
-	huart->gState 		= HAL_UART_STATE_BUSY_TX;
+//	huart->gState 		= HAL_UART_STATE_BUSY_TX;
 	huart->pTxBuffPtr 	= pData;
 	huart->TxXferSize 	= Size;
 	huart->TxXferCount 	= Size;
@@ -383,6 +383,7 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 			/* Call the Tx callback API to give the possibility to
 			   start again the Transmission under the Tx callback API */
 			idbusUARTTxComplete(huart);
+			HAL_GPIO_TogglePin(DEBUG_OUT);
 		}
 		/* UART in mode Transmitter (Tx Empty)     ---------------------------------*/
 		else if ((flags & UART_FLAG_TXE) != 0)
@@ -485,7 +486,7 @@ void idbusUartInit(UART_HandleTypeDef* huart)
 	huart->Init.Parity 					= UART_PARITY_NONE;
 	huart->Init.Mode 					= UART_MODE_TX_RX;
 	huart->Init.HwFlowCtl 				= UART_HWCONTROL_NONE;
-	huart->Init.OverSampling 			= UART_OVERSAMPLING_8;
+	huart->Init.OverSampling 			= UART_OVERSAMPLING_16;
 	huart->Init.OneBitSampling 			= UART_ONE_BIT_SAMPLE_DISABLE;
 	huart->Init.ClockPrescaler 			= UART_PRESCALER_DIV1;
 	huart->AdvancedInit.AdvFeatureInit 	= UART_ADVFEATURE_NO_INIT;
@@ -515,7 +516,7 @@ void idbusMspInit(void)
 	/* Peripheral clock enable */
 	__HAL_RCC_USART3_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
-	initGPIO(ACC_AID_TX, GPIO_MODE_AF_PP, GPIO_NOPULL, 0, GPIO_AF4_USART3); /* PB8,  ACC_AID_TX */
+	initGPIO(ACC_AID_TX, GPIO_MODE_AF_PP, GPIO_NOPULL, 0, GPIO_AF4_USART3); 	/* PB8,  ACC_AID_TX */
 	initGPIO(ACC_AID_RX, GPIO_MODE_AF_PP, GPIO_PULLUP, 0, GPIO_AF4_USART3); 	/* PB9,  ACC_AID_RX */
 	HAL_NVIC_SetPriority(ORION_UART_IRQn, ORION_UART_IRQ_PRIORITY, 0);
 	HAL_NVIC_EnableIRQ(ORION_UART_IRQn);

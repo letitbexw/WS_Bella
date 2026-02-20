@@ -32,7 +32,7 @@
 #define CNFG_AID_BULK_DATA_VERSION     	0x00
 #define CNFG_HID_ENDPOINTS_MAX          2
 
-#define DEBUG_ENABLED
+//#define DEBUG_ENABLED
 //#define CNFG_WATCHDOG_ENABLED
 
 /* System Timers */

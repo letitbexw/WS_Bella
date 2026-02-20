@@ -419,8 +419,9 @@ static void mainServiceIap2(void)
 
 void Error_Handler(void)
 {
-  __disable_irq();
-  while (1) {}
+	HAL_GPIO_WritePin(LED_RED, GPIO_PIN_SET);
+	__disable_irq();
+	while (1) {}
 }
 #ifdef USE_FULL_ASSERT
 /**
