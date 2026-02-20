@@ -27,9 +27,9 @@ typedef struct _IDIO_IF_DATA
 //#define CNFG_DEBUG_IDIO_COMMANDS
 
 // access to device unique id
-#define         Device1_Identifier          (0x1FF80050)
-#define         Device2_Identifier          (0x1FF80054)
-#define         Device3_Identifier          (0x1FF80064)
+#define         Device1_Identifier          (0x1FFF7590)
+#define         Device2_Identifier          (0x1FFF7594)
+#define         Device3_Identifier          (0x1FFF7598)
 
 /* Private variables ---------------------------------------------------------*/
 static const uint8_t accessoryInfoStringsManufacturer[] = CNFG_ACCESSORY_MANUFACTURER;
@@ -252,11 +252,11 @@ void idioProcessCommand(AID_CMD_Type * idioRxPacketPtr, AID_RESP_Type * idioResp
 
     	case AID_COMMAND_InterfaceDeviceInfo:	// 0x76 --> 0x77
     	{
-//    		union serial_type {
-//    			uint8_t bytes[8];
-//    			uint32_t raw[2];
-//    		};
-//    		union serial_type sn;
+    		union serial_type {
+    			uint8_t bytes[8];
+    			uint32_t raw[2];
+    		};
+    		union serial_type sn;
 			idioResponsePacketPtr->length 				   = aidNumPayloadBytesForCommand(AID_RESPONSE_InterfaceDeviceInfo);
 			idioResponsePacketPtr->packet.bytes.packetType = AID_RESPONSE_InterfaceDeviceInfo;	// 0x77
 			idioResponsePacketPtr->packet.bytes.payload[0] = CNFG_AID_VID; 			// VID
@@ -264,14 +264,14 @@ void idioProcessCommand(AID_CMD_Type * idioRxPacketPtr, AID_RESP_Type * idioResp
 			idioResponsePacketPtr->packet.bytes.payload[2] = CNFG_AID_IF_REVISION; 	// Rev
 			idioResponsePacketPtr->packet.bytes.payload[3] = AV; 					// Accessory Vendor
 			HAL_GPIO_TogglePin(DEBUG_OUT);
-//			sn.raw[0] = *(uint32_t*)Device1_Identifier;
-//			sn.raw[1] = *(uint32_t*)Device2_Identifier;
-			idioResponsePacketPtr->packet.bytes.payload[4] = 0x00; // sn.bytes[5]; // Id Serial [5]
-			idioResponsePacketPtr->packet.bytes.payload[5] = 0x00; // sn.bytes[4]; // Id Serial [4]
-			idioResponsePacketPtr->packet.bytes.payload[6] = 0x00; // sn.bytes[3]; // Id Serial [3]
-			idioResponsePacketPtr->packet.bytes.payload[7] = 0x00; // sn.bytes[2]; // Id Serial [2]
-			idioResponsePacketPtr->packet.bytes.payload[8] = 0x00; // sn.bytes[1]; // Id Serial [1]
-			idioResponsePacketPtr->packet.bytes.payload[9] = 0x00; // sn.bytes[0]; // Id Serial [0]
+			sn.raw[0] = *(uint32_t*)Device1_Identifier;
+			sn.raw[1] = *(uint32_t*)Device2_Identifier;
+			idioResponsePacketPtr->packet.bytes.payload[4] = sn.bytes[5]; // Id Serial [5]
+			idioResponsePacketPtr->packet.bytes.payload[5] = sn.bytes[4]; // Id Serial [4]
+			idioResponsePacketPtr->packet.bytes.payload[6] = sn.bytes[3]; // Id Serial [3]
+			idioResponsePacketPtr->packet.bytes.payload[7] = sn.bytes[2]; // Id Serial [2]
+			idioResponsePacketPtr->packet.bytes.payload[8] = sn.bytes[1]; // Id Serial [1]
+			idioResponsePacketPtr->packet.bytes.payload[9] = sn.bytes[0]; // Id Serial [0]
 
 			ret = IDIO_RESPONSE_VALID;
 			HAL_GPIO_TogglePin(DEBUG_OUT);

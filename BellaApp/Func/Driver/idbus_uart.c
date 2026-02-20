@@ -373,13 +373,14 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 	{
 		// refetch flags to speed up Tx processing
 		flags = READ_REG(huart->Instance->ISR);
+
 		/* UART in mode Transmitter (character sent)--------------------------------*/
 		if ((flags & USART_ISR_TC) != 0)
 		{
 			SET_BIT(huart->Instance->ICR, USART_ICR_TCCF);
 			/* Disable the UART Transmit Complete Interrupt */
 			__HAL_UART_DISABLE_IT(huart, UART_IT_TC);
-			__HAL_UART_DISABLE_IT(huart, UART_IT_TXE);
+			__HAL_UART_DISABLE_IT(huart, UART_IT_TXE);			// XW
 			/* Call the Tx callback API to give the possibility to
 			   start again the Transmission under the Tx callback API */
 			idbusUARTTxComplete(huart);

@@ -12,7 +12,7 @@
 
 
 uint8_t serialNumber[PRODUCT_FG_SER_NUM_SZ + 1] 	= "";
-uint8_t mlbSerialNumber[PRODUCT_MLB_SER_NUM_SZ + 1] = "MLB_ABCDEFG234567";
+uint8_t mlbSerialNumber[PRODUCT_MLB_SER_NUM_SZ + 1] = "MLB_ABCDEFG1234567";
 
 
 uint8_t* getProductSN(uint16_t* length)
@@ -23,6 +23,7 @@ uint8_t* getProductSN(uint16_t* length)
 
 uint8_t* getModuleSN(uint16_t* length)
 {
+	if (length) { *length = PRODUCT_MLB_SER_NUM_SZ; }
 	return &mlbSerialNumber[0];
 }
 
