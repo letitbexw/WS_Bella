@@ -84,9 +84,10 @@ static void ButtonEvent(void)
 		if (HAL_GetTick() - tBtnPressed > BTN_DEBOUNCE_TIME)
 		{
 			HAL_GPIO_TogglePin(LED_GRN);
-			USBPD_SetRequestedVoltage(9000);
-			USBPD_DPM_RequestGetSourceCapability(USBPD_PORT_0);
+//			USBPD_SetRequestedVoltage(9000);
+//			USBPD_DPM_RequestGetSourceCapability(USBPD_PORT_0);
 			mainClearEvents(MAIN_EVENT_BTNPRESSED);
+			mainSetEvents(MAIN_EVENT_PD_UPDATE);
 		}
 	}
 }
@@ -108,6 +109,7 @@ int main(void)
 	bspSetOrionThreshold(bspOrionThreshMed);
 	aidpdSetSinkCapability(USB_REQ_USB_NOSUSPEND | USB_REQ_OP_CURRENT(50) | USB_REQ_MINMAX_CURRENT(100));
 	aidpdSetSourceCapability(PDO_VSAFE5V_SRC, 0);		// Add 5V PDO
+//	aidpdSetSourceCapability(PDO_V5V3A_SRC, 1);
 
 	bspSetDataEnable(true);
 //	iap2Init();

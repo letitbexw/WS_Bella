@@ -479,7 +479,7 @@ uint8_t setOrionState(orionState_t newState)
 			case orionStateProvProvider:
 			{
 				setOrionPull(orionLinePullUp);
-				setOrionPower(orionPower, false);
+				setOrionPower(orionPower, true);		// XW
 
 				mainSetEvents(orionSwapInProgress ? MAIN_EVENT_AID_RESUME : MAIN_EVENT_AID_CONNECT);
 				orionSwapInProgress = false;
@@ -505,6 +505,7 @@ uint8_t setOrionState(orionState_t newState)
 			{
 				setOrionPull(orionLinePullUp);
 				setOrionPower(orionPower, true);
+//				HAL_GPIO_TogglePin(DEBUG_OUT);
 				pushOrionConnectionState();
 
 #ifdef CNFG_COLLECT_ORION_STATISTICS

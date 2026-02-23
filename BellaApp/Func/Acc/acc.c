@@ -8,9 +8,23 @@
 #include "main.h"
 #include "acc.h"
 
+static uint8_t ChargeVoltageCurrent[2 * sizeof(uint16_t)] = {0x13, 0x88, 0x0B, 0xB8}; //5000mV, 3000mA,
+
 
 uint16_t accGetParamLength(uint8_t paramId) 	{ return 0; }
-uint8_t* accGetParamData(uint8_t paramId)		{ return NULL; }
+
+uint8_t* accGetParamData(uint8_t paramId)
+{
+	if (paramId == ACC_PARAM_ID_PD_CHARGE)
+	{
+		return (uint8_t *)ChargeVoltageCurrent;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
 bool accGetIdChanged(void)						{ return false; }
 void accResetComm(void)							{}
 

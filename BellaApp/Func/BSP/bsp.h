@@ -53,7 +53,7 @@
 #define ORION_UART_BASE_PTR           	USART3
 #define ORION_UART_IRQn                 USART3_4_5_6_LPUART1_IRQn
 #define ORION_UART_RATE					1000000
-#define ORION_UART_IRQ_PRIORITY			1
+#define ORION_UART_IRQ_PRIORITY			0
 
 // Orion interface
 #define ORION_DATA_CONSUMER_DISC_THRESHOLD  300   	//mV

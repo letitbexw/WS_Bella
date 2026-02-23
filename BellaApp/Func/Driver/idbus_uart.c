@@ -381,10 +381,18 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 			/* Disable the UART Transmit Complete Interrupt */
 			__HAL_UART_DISABLE_IT(huart, UART_IT_TC);
 			__HAL_UART_DISABLE_IT(huart, UART_IT_TXE);			// XW
-			/* Call the Tx callback API to give the possibility to
-			   start again the Transmission under the Tx callback API */
-			idbusUARTTxComplete(huart);
-			HAL_GPIO_TogglePin(DEBUG_OUT);
+
+			if (huart->TxXferCount > 0)
+			{
+				idbusTxNext(huart);
+			}
+			else
+			{
+				/* Call the Tx callback API to give the possibility to
+				   start again the Transmission under the Tx callback API */
+				idbusUARTTxComplete(huart);
+				HAL_GPIO_TogglePin(DEBUG_OUT);
+			}
 		}
 		/* UART in mode Transmitter (Tx Empty)     ---------------------------------*/
 		else if ((flags & UART_FLAG_TXE) != 0)

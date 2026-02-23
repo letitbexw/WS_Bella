@@ -301,6 +301,7 @@ void idioProcessCommand(AID_CMD_Type * idioRxPacketPtr, AID_RESP_Type * idioResp
     	}
 
     	case AID_COMMAND_GetAccessoryInfoString:	// 0x80 --> 0x81
+    		HAL_GPIO_TogglePin(DEBUG_OUT);
     		ret = idioSendGetAccessoryInfoStringResponse(idioRxPacketPtr, idioResponsePacketPtr);
     		break;
     	case AID_COMMAND_GetAccessoryInfoVersion:	// 0x82 --> 0x83

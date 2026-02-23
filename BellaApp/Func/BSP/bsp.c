@@ -93,7 +93,7 @@ static void gpioInit(void)
 	initGPIO(REMOVAL_DET_L,		GPIO_MODE_INPUT, 	 GPIO_NOPULL, 	0, 0);				/* PC7, REMOVAL_DET_L */
 	initGPIO(ORION_DATA_ENABLE, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, 	GPIO_PIN_RESET, 0);	/* PA15, ORION_DATA_ENABLE */
 	initGPIO(DISCH_ORION, 		GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, 	GPIO_PIN_RESET, 0);	/* PB13, DISCH_ORION */
-	initGPIO(MAGIC_PD_DIS, 		GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, 	GPIO_PIN_RESET, 0);	/* PC6, MAGIC_PD_DIS */
+	initGPIO(MAGIC_PD_DIS, 		GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, 	GPIO_PIN_SET, 0);	/* PC6, MAGIC_PD_DIS */
 	initGPIO(DEBUG_OUT,			GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, 	GPIO_PIN_RESET, 0); /* PB0, DEBUG_OUT */
 
 	// Set all other pins to be input, float
@@ -213,6 +213,7 @@ void bspSetOrionPower(orionPowerSource_t source, uint8_t highPower)
     		HAL_GPIO_WritePin(USBC_LPEN, 	GPIO_PIN_RESET);
     		HAL_GPIO_WritePin(USBC_HPEN, 	GPIO_PIN_RESET);
     		HAL_GPIO_WritePin(DISCH_ORION, GPIO_PIN_RESET);
+    		HAL_GPIO_WritePin(PSEN_P0, GPIO_PIN_RESET);		// XW
     		break;
 
     	case orionPowerSourceDrain:
@@ -221,6 +222,7 @@ void bspSetOrionPower(orionPowerSource_t source, uint8_t highPower)
     		HAL_GPIO_WritePin(USBC_LPEN, 	GPIO_PIN_RESET);
     		HAL_GPIO_WritePin(USBC_HPEN, 	GPIO_PIN_RESET);
     		HAL_GPIO_WritePin(DISCH_ORION, GPIO_PIN_SET);		//PD
+    		HAL_GPIO_WritePin(PSEN_P0, GPIO_PIN_RESET);		// XW
     		break;
 
     	case orionPowerSourceEnable:
@@ -228,7 +230,11 @@ void bspSetOrionPower(orionPowerSource_t source, uint8_t highPower)
     		HAL_GPIO_WritePin(DISCH_ORION, GPIO_PIN_RESET);
     		HAL_GPIO_WritePin(USBC_LPEN, 	highPower? GPIO_PIN_RESET : GPIO_PIN_SET);
     		HAL_GPIO_WritePin(USBC_HPEN, 	highPower? GPIO_PIN_SET : GPIO_PIN_RESET);
+//			HAL_GPIO_WritePin(USBC_LPEN, 	GPIO_PIN_SET);
+//			HAL_GPIO_WritePin(USBC_HPEN, 	GPIO_PIN_SET);
     		HAL_GPIO_WritePin(PSEN_ORION, 	GPIO_PIN_SET);
+    		HAL_GPIO_WritePin(PSEN_P0, GPIO_PIN_SET);		// XW
+    		HAL_GPIO_TogglePin(DEBUG_OUT);
     		break;
 	}
 }
