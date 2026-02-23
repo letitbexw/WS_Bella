@@ -108,8 +108,9 @@ int main(void)
 	setOrionPowerSource(orionPowerSourceNone);
 	bspSetOrionThreshold(bspOrionThreshMed);
 	aidpdSetSinkCapability(USB_REQ_USB_NOSUSPEND | USB_REQ_OP_CURRENT(50) | USB_REQ_MINMAX_CURRENT(100));
-	aidpdSetSourceCapability(PDO_VSAFE5V_SRC, 0);		// Add 5V PDO
-//	aidpdSetSourceCapability(PDO_V5V3A_SRC, 1);
+//	aidpdSetSourceCapability(PDO_VSAFE5V_SRC, 0);		// Add 5V PDO
+	aidpdSetSourceCapability(PDO_V5V3A_SRC, 0);
+	aidpdSetSourceCapability(PDO_V9V3A_SRC, 1);
 
 	bspSetDataEnable(true);
 //	iap2Init();
@@ -310,7 +311,7 @@ static void mainEventService(void)
 			mV = pDmV;
 			mA = pDmA;
 			DEBUG_PRINT_BOARD("SetSourceCap: %dmV, %dmA", mV, mA);
-			aidpdSetSourceCapability(USB_PDO_TYPE_FIXED | USB_PDO_DUAL_ROLE | USB_PDO_VOLTAGE(mV) | USB_PDO_CURRENT(mA), 0);
+			aidpdSetSourceCapability(USB_PDO_TYPE_FIXED | USB_PDO_DUAL_ROLE | USB_PDO_VOLTAGE(mV) | USB_PDO_CURRENT(mA), 1);
 			aidpdResetDevice();
 			if (((mV < MINIMUM_PROVIDER_MV) || (mA < MINIMUM_PROVIDER_MA)) && (getOrionState() != orionStateConsumer))
 			{

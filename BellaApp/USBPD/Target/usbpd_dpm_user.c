@@ -104,7 +104,7 @@ void USBPD_SetRequestedVoltage(uint32_t vol) { RequestedVoltage = vol; }
 
 static void ResetPort(void)
 {
-	RequestedVoltage 								= 5000;
+	RequestedVoltage 								= 9000;
 	DPM_Ports[USBPD_PORT_0].CurrentRole 			= PORT_CONTRACT_ROLE_NONE;
 	DPM_Ports[USBPD_PORT_0].ContractPDO.d32 		= 0;
 	DPM_Ports[USBPD_PORT_0].DPM_NumberOfRcvSRCPDO 	= 0;
@@ -183,6 +183,8 @@ void USBPD_DPM_Notification(uint8_t PortNum, USBPD_NotifyEventValue_TypeDef Even
     		DEBUG_PRINT_USBPD("USBPD_PORT_0 EXPLICIT CONTRACT, [%dmV / %dmA]",
     			    			DPM_Ports[USBPD_PORT_0].ContractPDO.SRCFixedPDO.VoltageIn50mVunits*50, DPM_Ports[USBPD_PORT_0].ContractPDO.SRCFixedPDO.MaxCurrentIn10mAunits*10);
     		DPM_Ports[USBPD_PORT_0].CurrentRole = PORT_CONTRACT_ROLE_SNK;
+    		HAL_GPIO_WritePin(PSEN_P0, GPIO_PIN_SET);
+    		HAL_GPIO_TogglePin(DEBUG_OUT);
     		break;
 //    	case USBPD_NOTIFY_REQUEST_ACCEPTED:
 //    		break;
