@@ -30,6 +30,7 @@
 #include "usbpd_dpm_conf.h"
 #include "usbpd_pwr_if.h"
 #include "usbpd_pwr_user.h"
+#include "acc.h"
 #if defined(_TRACE)
 #include "usbpd_trace.h"
 #include "string.h"
@@ -104,13 +105,14 @@ void USBPD_SetRequestedVoltage(uint32_t vol) { RequestedVoltage = vol; }
 
 static void ResetPort(void)
 {
-	RequestedVoltage 								= 9000;
+	RequestedVoltage 								= 5000;
 	DPM_Ports[USBPD_PORT_0].CurrentRole 			= PORT_CONTRACT_ROLE_NONE;
 	DPM_Ports[USBPD_PORT_0].ContractPDO.d32 		= 0;
 	DPM_Ports[USBPD_PORT_0].DPM_NumberOfRcvSRCPDO 	= 0;
 
 	for(uint8_t i=0;i<USBPD_MAX_NB_PDO;i++) { DPM_Ports[USBPD_PORT_0].DPM_ListOfRcvSRCPDO[i] = 0x00000000U; }
 	HAL_GPIO_WritePin(PSEN_P0, GPIO_PIN_RESET);
+	SetChargeVoltageCurrent(0, 0);
 }
 
 /**
@@ -184,7 +186,8 @@ void USBPD_DPM_Notification(uint8_t PortNum, USBPD_NotifyEventValue_TypeDef Even
     			    			DPM_Ports[USBPD_PORT_0].ContractPDO.SRCFixedPDO.VoltageIn50mVunits*50, DPM_Ports[USBPD_PORT_0].ContractPDO.SRCFixedPDO.MaxCurrentIn10mAunits*10);
     		DPM_Ports[USBPD_PORT_0].CurrentRole = PORT_CONTRACT_ROLE_SNK;
     		HAL_GPIO_WritePin(PSEN_P0, GPIO_PIN_SET);
-    		HAL_GPIO_TogglePin(DEBUG_OUT);
+    		SetChargeVoltageCurrent((uint16_t)DPM_Ports[USBPD_PORT_0].ContractPDO.SRCFixedPDO.VoltageIn50mVunits*50, (uint16_t)DPM_Ports[USBPD_PORT_0].ContractPDO.SRCFixedPDO.MaxCurrentIn10mAunits*10);
+    		mainSetEvents(MAIN_EVENT_PD_UPDATE);
     		break;
 //    	case USBPD_NOTIFY_REQUEST_ACCEPTED:
 //    		break;

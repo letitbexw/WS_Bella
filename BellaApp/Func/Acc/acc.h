@@ -53,7 +53,7 @@
 
 uint16_t accGetParamLength(uint8_t paramId);
 
-
+void SetChargeVoltageCurrent(uint16_t mv, uint16_t ma);
 uint8_t* accGetParamData(uint8_t paramId);
 bool accGetIdChanged(void);
 

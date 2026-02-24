@@ -8,11 +8,19 @@
 #include "main.h"
 #include "acc.h"
 
-//static uint8_t ChargeVoltageCurrent[2 * sizeof(uint16_t)] = {0x13, 0x88, 0x0B, 0xB8}; //5000mV, 3000mA,
-static uint8_t ChargeVoltageCurrent[2 * sizeof(uint16_t)] = {0x23, 0x28, 0x0B, 0xB8}; //5000mV, 3000mA,
+static uint8_t ChargeVoltageCurrent[2 * sizeof(uint16_t)] = {0x00, 0x00, 0x00, 0x00};
 
 
 uint16_t accGetParamLength(uint8_t paramId) 	{ return 0; }
+
+
+void SetChargeVoltageCurrent(uint16_t mv, uint16_t ma)
+{
+	ChargeVoltageCurrent[0] = mv >> 8;
+	ChargeVoltageCurrent[1] = mv & 0x00FF;
+	ChargeVoltageCurrent[2] = ma >> 8;
+	ChargeVoltageCurrent[3] = ma & 0x00FF;
+}
 
 uint8_t* accGetParamData(uint8_t paramId)
 {

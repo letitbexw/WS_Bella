@@ -391,7 +391,7 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 				/* Call the Tx callback API to give the possibility to
 				   start again the Transmission under the Tx callback API */
 				idbusUARTTxComplete(huart);
-				HAL_GPIO_TogglePin(DEBUG_OUT);
+//				HAL_GPIO_TogglePin(DEBUG_OUT);
 			}
 		}
 		/* UART in mode Transmitter (Tx Empty)     ---------------------------------*/
@@ -411,6 +411,7 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 	{
 		if ((flags & (USART_ISR_FE)) != 0)
 		{
+//			HAL_GPIO_TogglePin(DEBUG_OUT);
 			// clear the framing error
 			SET_BIT(huart->Instance->ICR, USART_ICR_FECF);
 			// clear Rx pending bit to drop charagter
@@ -437,11 +438,18 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 			// clear Rx pending bit to drop charagter
 			SET_BIT(huart->Instance->RQR, USART_RQR_RXFRQ);
 		}
-//		else if ((flags & USART_ISR_PE) != 0U)
-//        {
-//			SET_BIT(huart->Instance->ICR, USART_ICR_PECF);
-//        }
-
+		else if ((flags & USART_ISR_PE) != 0U)
+        {
+			SET_BIT(huart->Instance->ICR, USART_ICR_PECF);
+			// clear Rx pending bit to drop charagter
+			SET_BIT(huart->Instance->RQR, USART_RQR_RXFRQ);
+        }
+		else if ((flags & USART_ISR_NE) != 0U)
+        {
+			SET_BIT(huart->Instance->ICR, USART_ICR_NECF);
+			// clear Rx pending bit to drop charagter
+			SET_BIT(huart->Instance->RQR, USART_RQR_RXFRQ);
+        }
 		// start new character read (will clear errors and return to Rx mode)
 		idbusReceive(huart, &idbusTmpRxBuff[0], 8);
 		idbusSetTimeOfLastActivityOnTheBus();

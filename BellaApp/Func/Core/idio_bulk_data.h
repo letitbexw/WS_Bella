@@ -18,6 +18,7 @@ void idioBulkDataServiceEnable(uint8_t enable);
 
 uint8_t idioBulkDataHandler(AID_CMD_Type * idioCommandPacketPtr, AID_RESP_Type * idioResponsePacketPtr);
 
+bool idioGetidioBulkDataReadCommandPending(void);
 void idioBulkDataClearReadPendingFlag(void);
 bool idioBulkDataIsEnabled(void);
 

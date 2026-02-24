@@ -158,6 +158,7 @@ void testInit(void)
 void testHarnessService(void)
 {
 	bool err;
+	uint8_t idx;
 
 	if (bspReadoutProtectionIsSet()) { return; }
 
@@ -291,11 +292,12 @@ void testHarnessService(void)
 				break;
 
 			case CMD_ORI:
-				if (getOrionDataAboveRMThreshold()) 		{ sprintf(&testResponse[0], "data > 2.4V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
+				if (getOrionDataAboveRMThreshold()) 		{ sprintf(&testResponse[0], "data > 2.4V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); idx= 25; }
 				else {
-					if (getOrionDataAboveRxThreshold()) 	{ sprintf(&testResponse[0], "1.5V < data < 2.4V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
-					else 									{ sprintf(&testResponse[0], "data < 1.5V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); }
+					if (getOrionDataAboveRxThreshold()) 	{ sprintf(&testResponse[0], "1.5V < data < 2.4V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); idx =31;}
+					else 									{ sprintf(&testResponse[0], "data < 1.5V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); idx = 25;}
 				}
+				sprintf(&testResponse[idx], "\n\tState = %d\n\tMode = %d", getOrionState(), getOrionMode());
 				break;
 
 			default:

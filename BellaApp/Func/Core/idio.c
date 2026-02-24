@@ -263,7 +263,6 @@ void idioProcessCommand(AID_CMD_Type * idioRxPacketPtr, AID_RESP_Type * idioResp
 			idioResponsePacketPtr->packet.bytes.payload[1] = CNFG_AID_PID; 			// PID
 			idioResponsePacketPtr->packet.bytes.payload[2] = CNFG_AID_IF_REVISION; 	// Rev
 			idioResponsePacketPtr->packet.bytes.payload[3] = AV; 					// Accessory Vendor
-			HAL_GPIO_TogglePin(DEBUG_OUT);
 			sn.raw[0] = *(uint32_t*)Device1_Identifier;
 			sn.raw[1] = *(uint32_t*)Device2_Identifier;
 			idioResponsePacketPtr->packet.bytes.payload[4] = sn.bytes[5]; // Id Serial [5]
@@ -274,7 +273,6 @@ void idioProcessCommand(AID_CMD_Type * idioRxPacketPtr, AID_RESP_Type * idioResp
 			idioResponsePacketPtr->packet.bytes.payload[9] = sn.bytes[0]; // Id Serial [0]
 
 			ret = IDIO_RESPONSE_VALID;
-			HAL_GPIO_TogglePin(DEBUG_OUT);
     	}
     		break;
 
@@ -301,7 +299,6 @@ void idioProcessCommand(AID_CMD_Type * idioRxPacketPtr, AID_RESP_Type * idioResp
     	}
 
     	case AID_COMMAND_GetAccessoryInfoString:	// 0x80 --> 0x81
-    		HAL_GPIO_TogglePin(DEBUG_OUT);
     		ret = idioSendGetAccessoryInfoStringResponse(idioRxPacketPtr, idioResponsePacketPtr);
     		break;
     	case AID_COMMAND_GetAccessoryInfoVersion:	// 0x82 --> 0x83
@@ -451,6 +448,7 @@ uint32_t idioProcessRxSymbol(uint16_t sym, AID_CMD_Type * idioRxPacketPtr, AID_R
 			else {
 				/* malformed command */
 				idioRxPacketPtr->state = IDRX_WAITBREAK;
+//				HAL_GPIO_TogglePin(DEBUG_OUT);
 			}
 			break;
 
@@ -470,6 +468,9 @@ uint32_t idioProcessRxSymbol(uint16_t sym, AID_CMD_Type * idioRxPacketPtr, AID_R
 				}
 #endif
 				idioRxPacketPtr->state = IDRX_WAITBREAK;
+				idioBulkDataClearReadPendingFlag();
+				HAL_GPIO_TogglePin(DEBUG_OUT);
+//				NVIC_SystemReset();	// XW
 			}
 			break;
 

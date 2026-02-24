@@ -234,7 +234,6 @@ void bspSetOrionPower(orionPowerSource_t source, uint8_t highPower)
 //			HAL_GPIO_WritePin(USBC_HPEN, 	GPIO_PIN_SET);
     		HAL_GPIO_WritePin(PSEN_ORION, 	GPIO_PIN_SET);
 //    		HAL_GPIO_WritePin(PSEN_P0, GPIO_PIN_SET);		// XW
-    		HAL_GPIO_TogglePin(DEBUG_OUT);
     		break;
 	}
 }

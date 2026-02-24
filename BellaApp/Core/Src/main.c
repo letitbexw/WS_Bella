@@ -72,6 +72,7 @@ static uint32_t tOrionAttach = 0;      // timer from OrionAttach. Set to 0 when 
 static void ButtonEvent(void)
 {
 	static uint32_t tBtnPressed = 0;
+	static uint32_t tError = 0;
 
 	if (HAL_GPIO_ReadPin(BTN_OK) == GPIO_PIN_RESET && !mainCheckEvents(MAIN_EVENT_BTNPRESSED))
 	{
@@ -83,13 +84,24 @@ static void ButtonEvent(void)
 		// Button released
 		if (HAL_GetTick() - tBtnPressed > BTN_DEBOUNCE_TIME)
 		{
-			HAL_GPIO_TogglePin(LED_GRN);
+//			HAL_GPIO_TogglePin(LED_GRN);
 //			USBPD_SetRequestedVoltage(9000);
 //			USBPD_DPM_RequestGetSourceCapability(USBPD_PORT_0);
 			mainClearEvents(MAIN_EVENT_BTNPRESSED);
-			mainSetEvents(MAIN_EVENT_PD_UPDATE);
+//			mainSetEvents(MAIN_EVENT_PD_UPDATE);
+			NVIC_SystemReset();
 		}
 	}
+
+	if (HAL_GPIO_ReadPin(PSEN_P0) == GPIO_PIN_SET && getOrionConnected() && getOrionState() != orionStateProvider)
+	{
+		// Both valid charger and Orion are connected, but not charging
+		if (HAL_GetTick() - tError > 2000)
+		{
+			NVIC_SystemReset();
+		}
+	}
+	else tError = HAL_GetTick();
 }
 
 
@@ -108,9 +120,9 @@ int main(void)
 	setOrionPowerSource(orionPowerSourceNone);
 	bspSetOrionThreshold(bspOrionThreshMed);
 	aidpdSetSinkCapability(USB_REQ_USB_NOSUSPEND | USB_REQ_OP_CURRENT(50) | USB_REQ_MINMAX_CURRENT(100));
-//	aidpdSetSourceCapability(PDO_VSAFE5V_SRC, 0);		// Add 5V PDO
-	aidpdSetSourceCapability(PDO_V5V3A_SRC, 0);
-	aidpdSetSourceCapability(PDO_V9V3A_SRC, 1);
+	aidpdSetSourceCapability(PDO_VSAFE5V_SRC, 0);		// Add 5V PDO
+//	aidpdSetSourceCapability(PDO_V5V3A_SRC, 0);
+//	aidpdSetSourceCapability(PDO_V9V3A_SRC, 1);
 
 	bspSetDataEnable(true);
 //	iap2Init();
@@ -260,6 +272,11 @@ static void mainEventService(void)
 
 	    tOrionAttach = GetTickCount();
 	    mainClearEvents(MAIN_EVENT_AID_CONNECT);
+
+//	    if (HAL_GPIO_ReadPin(PSEN_P0) == GPIO_PIN_SET)
+//	    {
+//	    	mainSetEvents(MAIN_EVENT_PD_UPDATE);
+//	    }
 	}
 
 	// handle Orion pause used in role swap to stop devices from talking during role swap
@@ -311,7 +328,7 @@ static void mainEventService(void)
 			mV = pDmV;
 			mA = pDmA;
 			DEBUG_PRINT_BOARD("SetSourceCap: %dmV, %dmA", mV, mA);
-			aidpdSetSourceCapability(USB_PDO_TYPE_FIXED | USB_PDO_DUAL_ROLE | USB_PDO_VOLTAGE(mV) | USB_PDO_CURRENT(mA), 1);
+			aidpdSetSourceCapability(USB_PDO_TYPE_FIXED | USB_PDO_DUAL_ROLE | USB_PDO_VOLTAGE(mV) | USB_PDO_CURRENT(mA), mV==5000? 0:1);
 			aidpdResetDevice();
 			if (((mV < MINIMUM_PROVIDER_MV) || (mA < MINIMUM_PROVIDER_MA)) && (getOrionState() != orionStateConsumer))
 			{

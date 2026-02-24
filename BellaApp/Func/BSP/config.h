@@ -33,7 +33,7 @@
 #define CNFG_HID_ENDPOINTS_MAX          2
 
 //#define DEBUG_ENABLED
-//#define CNFG_WATCHDOG_ENABLED
+#define CNFG_WATCHDOG_ENABLED
 
 /* System Timers */
 #define HF_TIMER               			TIM6

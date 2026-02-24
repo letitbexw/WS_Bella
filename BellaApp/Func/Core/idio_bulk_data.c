@@ -74,6 +74,7 @@ static uint16_t idioEndpointConfig[IDIO_ENDPOINTS_MAX] 	= {};
 extern volatile uint8_t collision;		// idbus uart collision
 
 
+bool idioGetidioBulkDataReadCommandPending(void) { return idioBulkDataReadCommandPending; }
 bool idioBulkDataIsEnabled(void) { return idioBulkDataEnabled; }
 
 static void idioEnumerateEndpoints(void)
