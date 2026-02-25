@@ -422,6 +422,7 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 			// receiving break should stop transmission, if in progress
 			if (!txIdle)
 			{
+//				HAL_GPIO_TogglePin(DEBUG_OUT);
 				idbusUARTTxStop(huart);
 				collision 	= 1;  	/* Set collision flag to 1 here */
 				rxReProcess = true; /* Set to True to put the Rx Data into IDIO Queue as X533c  is transmitting data and collision has occurred . See <rdar://problem/55049140> */
@@ -458,6 +459,7 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 	// receiving break / error and data are mutually exclusive
 	else if ((flags & UART_FLAG_RXNE) != 0)
 	{
+		HAL_GPIO_TogglePin(DEBUG_OUT);
 		idbusRxHandler(huart);
 		idbusSetTimeOfLastActivityOnTheBus();
 		// @TODO: collision detect

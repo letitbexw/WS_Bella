@@ -32,11 +32,13 @@ bool aidPDReceivedCommand(uint8_t command);
 bool aidPDReceivedData(uint8_t command, uint8_t* dataPtr, uint8_t length);
 
 bool aidpdSetSourceCapability(uint32_t capability, int8_t position);
+void aidpdInitSourceCapability(void);
 bool aidpdSetSinkCapability(uint32_t capability);
 
 void aidpdInit(void);
 void aidpdResetDevice(void);
 uint8_t aidpdService(void);
+uint32_t *aidGetAccSrcCap(uint8_t *num);
 
 
 #endif /* CORE_AID_PD_H_ */

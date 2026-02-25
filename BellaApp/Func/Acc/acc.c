@@ -91,7 +91,7 @@ bool accIapFileFromDev(uint8_t *data, uint16_t len)
 	return false;
 }
 
-bool accGetInitDone(void) 					{ return false; }
+bool accGetInitDone(void) 					{ return true; }
 bool accGetDeviceIsPresent(void) 			{ return false; }
 void accSetDeviceIsPresent(bool newState) 	{ UNUSED(newState); }
 bool accGetDeviceIsWake(void)				{ return false; }

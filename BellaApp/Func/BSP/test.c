@@ -15,10 +15,13 @@
 #include "adc.h"
 #include "i2c.h"
 #include "orion.h"
+#include "aid_pd.h"
+#include "usbpd.h"
+#include "usbpd_dpm_user.h"
 
 
 #define TEST_HARNESS_MAX_CMD_SIZE       28
-#define TEST_HARNESS_MAX_RESPONSE_SIZE  200
+#define TEST_HARNESS_MAX_RESPONSE_SIZE  255
 
 
 enum {
@@ -32,6 +35,7 @@ enum {
 	CMD_IN,
 	CMD_CTRL,
 	CMD_ORI,
+	CMD_PDO,
 	CMD_LAST,
 	CMD_NO_MATCH = 255,
 };
@@ -54,7 +58,8 @@ static const TestCommandTable testCommandTable[] = {
 	[7]={ .cmdIdx=CMD_IN, 			"IN",		.cmdStrMaxLen=2, 	"" 					},
 	[8]={ .cmdIdx=CMD_CTRL, 		"CTRL",		.cmdStrMaxLen=14, 	"" 					},
 	[9]={ .cmdIdx=CMD_ORI, 			"ORI",		.cmdStrMaxLen=3, 	"" 					},
-	[10]={ .cmdIdx=CMD_LAST, 		"", 		.cmdStrMaxLen=0, 	"" 					},
+	[10]={ .cmdIdx=CMD_PDO, 		"PDO",		.cmdStrMaxLen=3, 	"" 					},
+	[11]={ .cmdIdx=CMD_LAST, 		"", 		.cmdStrMaxLen=0, 	"" 					},
 };
 
 static const char respErrorStr[] = "<ERROR>";
@@ -111,6 +116,7 @@ static uint8_t findCommand(void)
 		uint8_t cmdLen = testCommandTable[idx].cmdStrMaxLen;
 
 		if (cmdStr == NULL) { return CMD_NO_MATCH; }
+		strupr(testCommand);
 		if (strncmp(testCommand, cmdStr, strlen(cmdStr)) == 0)
 		{
 			if (strlen(testCommand) > cmdLen) { return CMD_NO_MATCH; }   // NOTE trailing excess ignored, not error
@@ -292,12 +298,31 @@ void testHarnessService(void)
 				break;
 
 			case CMD_ORI:
-				if (getOrionDataAboveRMThreshold()) 		{ sprintf(&testResponse[0], "data > 2.4V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); idx= 25; }
+				if (getOrionDataAboveRMThreshold()) 		{ sprintf(&testResponse[0], "data > 2.4V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); idx= 28; }
 				else {
-					if (getOrionDataAboveRxThreshold()) 	{ sprintf(&testResponse[0], "1.5V < data < 2.4V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); idx =31;}
-					else 									{ sprintf(&testResponse[0], "data < 1.5V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); idx = 25;}
+					if (getOrionDataAboveRxThreshold()) 	{ sprintf(&testResponse[0], "1.5V < data < 2.4V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); idx =34;}
+					else 									{ sprintf(&testResponse[0], "data < 1.5V\n\tVORION = %d mV", (int)ReadAdcVBUS(ORION)); idx = 28;}
 				}
 				sprintf(&testResponse[idx], "\n\tState = %d\n\tMode = %d", getOrionState(), getOrionMode());
+				break;
+
+			case CMD_PDO:
+			{
+				uint8_t num;
+				uint32_t *pPDO;
+				uint32_t mV, mA;
+				uint16_t cmV, cmA;
+
+				pPDO = aidGetAccSrcCap(&num);
+				sprintf(&testResponse[0],"ACC/USBPD SRC PDOs:\n");
+				for(uint8_t i=0; i<num; i++)
+				{
+					mV = ((pPDO[i] >> USB_PDO_VOLTAGE_SHIFT) & USB_PDO_VOLTAGE_MASK)*50;
+					mA = ((pPDO[i] >> USB_PDO_CURRENT_SHIFT) & USB_PDO_CURRENT_MASK)*10;
+					GetContractPDO(&cmV, &cmA);
+					sprintf(&testResponse[20 + i*34],"\t%d - 0x%08X, %5dmV/%4dmA %s\n", i, (unsigned int)pPDO[i], (int)mV, (int)mA, mV==cmV? "*":" ");
+				}
+			}
 				break;
 
 			default:

@@ -474,7 +474,7 @@ uint32_t idioProcessRxSymbol(uint16_t sym, AID_CMD_Type * idioRxPacketPtr, AID_R
 #endif
 				idioRxPacketPtr->state = IDRX_WAITBREAK;
 				idioBulkDataClearReadPendingFlag();
-				HAL_GPIO_TogglePin(DEBUG_OUT);
+//				HAL_GPIO_TogglePin(DEBUG_OUT);
 				 __disable_irq();
 				NVIC_SystemReset();	// XW, this is a WA to handle host package error.
 				while(1);

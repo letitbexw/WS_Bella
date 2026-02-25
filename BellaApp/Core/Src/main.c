@@ -43,7 +43,7 @@ volatile uint32_t mainEvents = 0;
 
 static uint8_t aidActive = false;
 //static uint8_t iap2Events = 0;
-static bool mainAuthState = true;	// XW
+static bool mainAuthState = false;	// XW
 
 static void mainEventService(void);
 static void mainServiceIap2(void);
@@ -259,6 +259,7 @@ static void mainEventService(void)
 		DEBUG_PRINT_BOARD("Orion AID Up");
 		setOrionAIDState(true);   // AID is running
 		mainClearEvents(MAIN_EVENT_AID_RUNNING);
+		mainSetEvents(MAIN_EVENT_AUTH_START);		// XW
 	}
 
 	// handle Orion Connected by polling idio
@@ -272,7 +273,6 @@ static void mainEventService(void)
 
 	    tOrionAttach = GetTickCount();
 	    mainClearEvents(MAIN_EVENT_AID_CONNECT);
-
 //	    if (HAL_GPIO_ReadPin(PSEN_P0) == GPIO_PIN_SET)
 //	    {
 //	    	mainSetEvents(MAIN_EVENT_PD_UPDATE);
@@ -408,6 +408,7 @@ static void mainEventService(void)
 		accResetComm();
 		mainAuthState = false;
 		mainClearEvents(MAIN_EVENT_AUTH_START);
+		mainSetEvents(MAIN_EVENT_AUTH_COMPLETE);	// XW
 	}
 
 	if (mainCheckEvents(MAIN_EVENT_AUTH_COMPLETE) && accGetInitDone())

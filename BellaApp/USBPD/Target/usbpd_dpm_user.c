@@ -114,6 +114,7 @@ static void ResetPort(void)
 	for(uint8_t i=0;i<USBPD_MAX_NB_PDO;i++) { DPM_Ports[USBPD_PORT_0].DPM_ListOfRcvSRCPDO[i] = 0x00000000U; }
 	HAL_GPIO_WritePin(PSEN_P0, GPIO_PIN_RESET);
 	SetChargeVoltageCurrent(5000, 500);
+	aidpdInitSourceCapability();
 }
 
 void GetContractPDO(uint16_t *pmV, uint16_t *pmA)
@@ -193,7 +194,7 @@ void USBPD_DPM_Notification(uint8_t PortNum, USBPD_NotifyEventValue_TypeDef Even
     			    			DPM_Ports[USBPD_PORT_0].ContractPDO.SRCFixedPDO.VoltageIn50mVunits*50, DPM_Ports[USBPD_PORT_0].ContractPDO.SRCFixedPDO.MaxCurrentIn10mAunits*10);
     		DPM_Ports[USBPD_PORT_0].CurrentRole = PORT_CONTRACT_ROLE_SNK;
     		HAL_GPIO_WritePin(PSEN_P0, GPIO_PIN_SET);
-    		HAL_GPIO_TogglePin(DEBUG_OUT);
+//    		HAL_GPIO_TogglePin(DEBUG_OUT);
 
     		USBPD_PDO_TypeDef  	 pdo;
     		USBPD_HandleTypeDef  *pdhandle = &DPM_Ports[PortNum];

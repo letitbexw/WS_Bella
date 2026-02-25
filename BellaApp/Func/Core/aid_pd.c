@@ -28,7 +28,7 @@
 #define AIDPD_WAIT_SOURCE_CAP_MS      	1000    //ms
 #define AIDPD_WAIT_RESPONSE_MS        	1000    //ms
 #define AIDPD_WAIT_COMMAND_MS         	5000    //ms
-#define AIDPD_SOURCE_POWER_ENABLE_MS    10    	//ms
+#define AIDPD_SOURCE_POWER_ENABLE_MS    50    	//ms	XW update from 10 to 50
 #define AIDPD_RETRY_SEND_MS             6    	//ms
 #define AIDPD_POWER_POLL_MS             50    	//ms
 #define AIDPD_TX_FLUSH_MS               1    	//ms
@@ -94,6 +94,13 @@ static const char* respName[] =
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+
+uint32_t *aidGetAccSrcCap(uint8_t *num)
+{
+	*num = numValidAccSourceCapability;
+	return  &accSourceCapability[0];;
+}
+
 
 /**
   * @brief  This determines if the actual capacity exceeds the needs
@@ -666,6 +673,12 @@ bool aidpdSetSourceCapability(uint32_t capability, int8_t position)
 		ret = true;
 	}
 	return ret;
+}
+
+void aidpdInitSourceCapability(void)
+{
+	accSourceCapability[0] = PDO_VSAFE5V_SRC;
+	numValidAccSourceCapability = 1;
 }
 
 
