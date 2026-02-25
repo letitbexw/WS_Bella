@@ -404,7 +404,7 @@ uint32_t idioProcessRxSymbol(uint16_t sym, AID_CMD_Type * idioRxPacketPtr, AID_R
 				}
 				else if (idioRxPacketPtr->expCount & AID_VARIABLE_LEN_PACKET_FLAG)
 				{	// Variable length
-					if (idioRxPacketPtr->length == (idioRxPacketPtr->expCount & AID_LEN_MASK))
+					if (idioRxPacketPtr->length == (idioRxPacketPtr->expCount & AID_LEN_MASK))	// Length Offset
 					{
 						switch(idioRxPacketPtr->packet.bytes.packetType) {
 							case AID_RESPONSE_BulkDataRead:
@@ -414,6 +414,10 @@ uint32_t idioProcessRxSymbol(uint16_t sym, AID_CMD_Type * idioRxPacketPtr, AID_R
 
 							case AID_COMMAND_BulkData:
 								idioRxPacketPtr->expCount = (sym & AID_LEN_MASK) + 5;
+								break;
+
+							case AID_COMMAND_SystemInfoString:
+								idioRxPacketPtr->expCount = (sym & AID_LEN_MASK) + 3;
 								break;
 
 							default:
@@ -457,7 +461,8 @@ uint32_t idioProcessRxSymbol(uint16_t sym, AID_CMD_Type * idioRxPacketPtr, AID_R
 				idioRxPacketPtr->state = IDRX_WAIT_TRAILBREAK;
 				idioRxPacketPtr->timeStamp = GetTickCount();
 			}
-			else {
+			else
+			{
 				// Bad CRC detected.
 				idioRxPacketPtr->state = 0xFF;   //CRC Error state
 #ifdef CNFG_DEBUG_IDIO_ENABLED
@@ -470,13 +475,16 @@ uint32_t idioProcessRxSymbol(uint16_t sym, AID_CMD_Type * idioRxPacketPtr, AID_R
 				idioRxPacketPtr->state = IDRX_WAITBREAK;
 				idioBulkDataClearReadPendingFlag();
 				HAL_GPIO_TogglePin(DEBUG_OUT);
-//				NVIC_SystemReset();	// XW
+				 __disable_irq();
+				NVIC_SystemReset();	// XW, this is a WA to handle host package error.
+				while(1);
 			}
 			break;
 
 		case IDRX_WAIT_TRAILBREAK:
 			if (sym == IDBUS_BREAK) {
 				idioProcessCommand(idioRxPacketPtr, idioResponsePacketPtr, ifOps);	// Received the whole command
+//				HAL_GPIO_TogglePin(DEBUG_OUT);
 				retVal = idioRxPacketPtr->packet.bytes.packetType;
 				idioRxPacketPtr->state = IDRX_WAITBREAK;
 			}

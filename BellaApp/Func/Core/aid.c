@@ -58,7 +58,7 @@ uint16_t aidNumPayloadBytesForCommand(uint8_t command)
 
 		case AID_COMMAND_Test:
 		case AID_COMMAND_ServiceModeRequest:
-		case AID_COMMAND_SystemInfoString:
+//		case AID_COMMAND_SystemInfoString:						// XW: This is wrong, AID_COMMAND_SystemInfoString is variable length
 		case AID_COMMAND_BulkDataEndpointInfo:
 		case AID_RESPONSE_CheckOperationStatus:
 		case AID_RESPONSE_CheckAuthentication:
@@ -138,6 +138,9 @@ uint16_t aidNumPayloadBytesForCommand(uint8_t command)
 
 		case AID_COMMAND_BulkData:
 			ret = AID_COMMAND_LEN_OFFSET_BulkData | AID_VARIABLE_LEN_PACKET_FLAG;
+			break;
+		case AID_COMMAND_SystemInfoString:
+			ret = AID_COMMAND_LEN_OFFSET_SystemInfoString | AID_VARIABLE_LEN_PACKET_FLAG;		// XW AID_COMMAND_SystemInfoString actually uses byte offset 2~3 to be a 16-bit length, to be simple, just use bits6~0 as length, and bit 7 as var flag
 			break;
  	}
 

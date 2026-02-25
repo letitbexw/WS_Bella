@@ -14,6 +14,8 @@
 #include "debug.h"
 #include "orion.h"
 #include "bsp.h"
+#include "usbpd.h"
+#include "usbpd_dpm_user.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -100,32 +102,32 @@ static const char* respName[] =
   */
 static uint32_t capabilityMet(uint32_t* have, uint8_t numHave, uint32_t need)
 {
-	uint32_t PDO 		= (need >> USB_REQ_OBJECT_POSITION_SHIFT) & USB_REQ_OBJECT_POSITION_MASK;
-	uint32_t updatedPDO = 0;
+	uint32_t posRDO 	= (need >> USB_REQ_OBJECT_POSITION_SHIFT) & USB_REQ_OBJECT_POSITION_MASK;
+	uint32_t updatedRDO = 0;
 	uint32_t reqCurrent = (need >> USB_REQ_MINMAX_CURRENT_SHIFT) & USB_REQ_MINMAX_CURRENT_MASK;
 	uint32_t PDOCurrent;
 	//DEBUG_PRINT_AIDPD("PDO=%u, req=%u", PDO, reqCurrent);
-	if (PDO == 0)
+	if (posRDO == 0)
 	{
 		// scan available PDSs for a match
-		while ((PDO < numHave) && (updatedPDO == 0))
+		while ((posRDO < numHave) && (updatedRDO == 0))
 		{
-			PDOCurrent = (have[PDO] >> USB_PDO_CURRENT_SHIFT) & USB_PDO_CURRENT_MASK;
+			PDOCurrent = (have[posRDO] >> USB_PDO_CURRENT_SHIFT) & USB_PDO_CURRENT_MASK;
 			//DEBUG_PRINT_AIDPD("PDO=%u, current=%u", PDO, PDOCurrent);
 			if (PDOCurrent >= reqCurrent)
-				updatedPDO = need | USB_REQ_OBJECT_POSITION(PDO);
-			PDO++;
+				updatedRDO = need | USB_REQ_OBJECT_POSITION(posRDO);
+			posRDO++;
 		}
 	}
 	else
 	{
-		PDOCurrent = (have[PDO-1] >> USB_PDO_CURRENT_SHIFT) & USB_PDO_CURRENT_MASK;
+		PDOCurrent = (have[posRDO-1] >> USB_PDO_CURRENT_SHIFT) & USB_PDO_CURRENT_MASK;
 		if (PDOCurrent >= reqCurrent)
-			updatedPDO = need;
+			updatedRDO = need;
 	}
 
-	DEBUG_PRINT_AIDPD("new req=0x%08x, PDO=%u", (uint32_t)updatedPDO, PDO);
-	return updatedPDO;
+	DEBUG_PRINT_AIDPD("new req=0x%08x, PDO=%u", (uint32_t)updatedRDO, posRDO);
+	return updatedRDO;
 }
 
 /**
@@ -425,6 +427,7 @@ bool aidPDReceivedCommand(uint8_t command)
     		actedOn = true;
     		break;
     	}
+
 		case EP_PD_CMD_GET_SINK_CAPABILITY:
 		case EP_PD_CMD_WAIT:
 		case EP_PD_CMD_GOTO_MIN:
@@ -484,7 +487,7 @@ bool aidPDReceivedData(uint8_t command, uint8_t* dataPtr, uint8_t length)
     	{
     		if ((aidpdState == aidpdStateIdle) && (numValidAccSourceCapability > 0))
     		{
-    			memcpy(&deviceSinkNeed, dataPtr, 4);
+    			memcpy(&deviceSinkNeed, dataPtr, 4);	// for J538, it's 2C B1 04 21, 15V/3A
     			dumpReq(deviceSinkNeed);
     			DEBUG_PRINT_AIDPD("Req for %umA (0x%08x)", (unsigned int)((deviceSinkNeed & USB_REQ_MINMAX_CURRENT_MASK) * 10), (unsigned int)deviceSinkNeed);
 
@@ -560,6 +563,20 @@ uint8_t aidpdService(void)
     		if (!TIMER_RUNNING(timer) && setOrionHighPower())
     		{
     			TIMER_SET(timer, AIDPD_SOURCE_POWER_ENABLE_MS);
+
+				uint32_t RDO = capabilityMet(&accSourceCapability[0], numValidAccSourceCapability, deviceSinkNeed);
+				uint32_t posPDO = (RDO >> USB_REQ_OBJECT_POSITION_SHIFT) & USB_REQ_OBJECT_POSITION_MASK;
+				uint16_t mV, mA, PDOmV;
+				posPDO = posPDO? posPDO-1 : 0;
+				PDOmV = (uint16_t)((accSourceCapability[posPDO] >> USB_PDO_VOLTAGE_SHIFT) & USB_PDO_VOLTAGE_MASK)*50;
+//    			GetChargeVoltageCurrent(&mV, &mA);
+				GetContractPDO(&mV, &mA);
+				if (PDOmV != mV)
+				{
+					USBPD_SetRequestedVoltage(PDOmV);
+					USBPD_DPM_RequestGetSourceCapability(USBPD_PORT_0);
+//					mainSetEvents(MAIN_EVENT_PD_UPDATE);
+				}
     		}
     		if ((TIMER_EXPIRED(timer) == true))
     		{

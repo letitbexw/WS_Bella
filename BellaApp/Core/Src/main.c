@@ -72,7 +72,6 @@ static uint32_t tOrionAttach = 0;      // timer from OrionAttach. Set to 0 when 
 static void ButtonEvent(void)
 {
 	static uint32_t tBtnPressed = 0;
-	static uint32_t tError = 0;
 
 	if (HAL_GPIO_ReadPin(BTN_OK) == GPIO_PIN_RESET && !mainCheckEvents(MAIN_EVENT_BTNPRESSED))
 	{
@@ -93,15 +92,16 @@ static void ButtonEvent(void)
 		}
 	}
 
-	if (HAL_GPIO_ReadPin(PSEN_P0) == GPIO_PIN_SET && getOrionConnected() && getOrionState() != orionStateProvider)
-	{
-		// Both valid charger and Orion are connected, but not charging
-		if (HAL_GetTick() - tError > 2000)
-		{
-			NVIC_SystemReset();
-		}
-	}
-	else tError = HAL_GetTick();
+//	static uint32_t tError = 0;
+//	if (HAL_GPIO_ReadPin(PSEN_P0) == GPIO_PIN_SET && getOrionConnected() && getOrionState() != orionStateProvider)
+//	{
+//		// Both valid charger and Orion are connected, but not charging
+//		if (HAL_GetTick() - tError > 2000)
+//		{
+//			NVIC_SystemReset();
+//		}
+//	}
+//	else tError = HAL_GetTick();
 }
 
 

@@ -11,6 +11,9 @@
 #include "ep_pd.h"
 #include "aid_pd.h"
 #include "debug.h"
+#include "usbpd.h"
+#include "usbpd_dpm_user.h"
+#include "acc.h"
 
 #define EPPD_BUFFER_COUNT    4
 
@@ -81,7 +84,7 @@ uint8_t epPDHandler(AID_ENDPOINT_PACKET_Type * command, AID_ENDPOINT_PACKET_Type
 	{
 		switch(command->endpointPacketType)
 		{
-			case EP_PD_CMD_GOTO_MIN:
+			case EP_PD_CMD_GOTO_MIN:	// EP_PD_CMD_GOTO_MIN and EP_PD_RESP_REQUEST have same value, very confusing
 			case EP_PD_CMD_ACCEPT:
 			case EP_PD_CMD_REJECT:
 			case EP_PD_CMD_PS_READY:

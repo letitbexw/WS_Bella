@@ -76,6 +76,7 @@ enum {
   * @{
   */
 void USBPD_SetRequestedVoltage(uint32_t vol);
+void GetContractPDO(uint16_t *pmV, uint16_t *pmA);
 
 USBPD_StatusTypeDef USBPD_DPM_UserInit(void);
 void                USBPD_DPM_WaitForTime(uint32_t Time);

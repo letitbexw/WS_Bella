@@ -214,6 +214,7 @@
 #define AID_COMMAND_LEN_OFFSET_BulkData         2
 #define AID_RESPONSE_LEN_OFFSET_BulkDataRead    1
 #define AID_RESPONSE_LEN_OFFSET_BulkData        1
+#define AID_COMMAND_LEN_OFFSET_SystemInfoString 3
 
 
 // Define Accessory Info String index values

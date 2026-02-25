@@ -54,6 +54,7 @@
 uint16_t accGetParamLength(uint8_t paramId);
 
 void SetChargeVoltageCurrent(uint16_t mv, uint16_t ma);
+void GetChargeVoltageCurrent(uint16_t *pmV, uint16_t *pmA);
 uint8_t* accGetParamData(uint8_t paramId);
 bool accGetIdChanged(void);
 
