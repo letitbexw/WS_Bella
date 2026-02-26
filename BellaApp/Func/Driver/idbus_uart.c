@@ -125,9 +125,9 @@ HAL_StatusTypeDef idbusTransmit(UART_HandleTypeDef *huart, uint8_t *pData, uint1
 HAL_StatusTypeDef idbusReceive(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size)
 {
 	if((pData == NULL ) || (Size == 0)) 		{ return HAL_ERROR; }
-	if (huart->RxState != HAL_UART_STATE_READY) { return HAL_BUSY; }
+//	if (huart->RxState != HAL_UART_STATE_READY) { return HAL_BUSY; }
 
-	huart->RxState 		= HAL_UART_STATE_BUSY_RX;
+//	huart->RxState 		= HAL_UART_STATE_BUSY_RX;
 	huart->pRxBuffPtr 	= pData;
 	huart->RxXferSize 	= Size;
 	huart->RxXferCount 	= Size;
@@ -208,7 +208,7 @@ static void idbusUARTTxStop(UART_HandleTypeDef* huart)
 	/* Disable the UART Transmit Complete and Tx Empty Interrupt */
 	__HAL_UART_DISABLE_IT(huart, UART_IT_TC);
 	__HAL_UART_DISABLE_IT(huart, UART_IT_TXE);
-	if (huart->gState == HAL_UART_STATE_BUSY_TX) { huart->gState = HAL_UART_STATE_READY; }
+//	if (huart->gState == HAL_UART_STATE_BUSY_TX) { huart->gState = HAL_UART_STATE_READY; }
 
 	txIdle = true;
 
@@ -350,7 +350,7 @@ __inline static HAL_StatusTypeDef idbusRxHandler(UART_HandleTypeDef *huart)
 		/* Disable the UART Error Interrupt: (Frame error, noise error, overrun error) */
 		__HAL_UART_DISABLE_IT(huart, UART_IT_ERR);
 //		CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
-		huart->RxState = HAL_UART_STATE_READY;
+//		huart->RxState = HAL_UART_STATE_READY;
 
 		idbusUARTRxComplete(huart);
 	}
@@ -422,10 +422,11 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 			// receiving break should stop transmission, if in progress
 			if (!txIdle)
 			{
-//				HAL_GPIO_TogglePin(DEBUG_OUT);
+//				HAL_GPIO_TogglePin(DEBUG_OUT);		// This is very werid, remove this toggle pin command will imporve collision a lot ~~~, handle IRQ asap??
 				idbusUARTTxStop(huart);
 				collision 	= 1;  	/* Set collision flag to 1 here */
 				rxReProcess = true; /* Set to True to put the Rx Data into IDIO Queue as X533c  is transmitting data and collision has occurred . See <rdar://problem/55049140> */
+				HAL_GPIO_TogglePin(DEBUG_OUT);
 			}
 			idioBulkDataClearReadPendingFlag();
 
@@ -459,7 +460,7 @@ uint32_t idbusUartIrqHandler(UART_HandleTypeDef *huart)
 	// receiving break / error and data are mutually exclusive
 	else if ((flags & UART_FLAG_RXNE) != 0)
 	{
-		HAL_GPIO_TogglePin(DEBUG_OUT);
+//		HAL_GPIO_TogglePin(DEBUG_OUT);
 		idbusRxHandler(huart);
 		idbusSetTimeOfLastActivityOnTheBus();
 		// @TODO: collision detect
