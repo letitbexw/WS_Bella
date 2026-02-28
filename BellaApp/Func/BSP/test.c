@@ -36,6 +36,7 @@ enum {
 	CMD_CTRL,
 	CMD_ORI,
 	CMD_PDO,
+	CMD_MID,
 	CMD_LAST,
 	CMD_NO_MATCH = 255,
 };
@@ -59,7 +60,8 @@ static const TestCommandTable testCommandTable[] = {
 	[8]={ .cmdIdx=CMD_CTRL, 		"CTRL",		.cmdStrMaxLen=14, 	"" 					},
 	[9]={ .cmdIdx=CMD_ORI, 			"ORI",		.cmdStrMaxLen=3, 	"" 					},
 	[10]={ .cmdIdx=CMD_PDO, 		"PDO",		.cmdStrMaxLen=3, 	"" 					},
-	[11]={ .cmdIdx=CMD_LAST, 		"", 		.cmdStrMaxLen=0, 	"" 					},
+	[11]={ .cmdIdx=CMD_MID, 		"MID",		.cmdStrMaxLen=3, 	"" 					},
+	[12]={ .cmdIdx=CMD_LAST, 		"", 		.cmdStrMaxLen=0, 	"" 					},
 };
 
 static const char respErrorStr[] = "<ERROR>";
@@ -321,6 +323,24 @@ void testHarnessService(void)
 					mA = ((pPDO[i] >> USB_PDO_CURRENT_SHIFT) & USB_PDO_CURRENT_MASK)*10;
 					GetContractPDO(&cmV, &cmA);
 					sprintf(&testResponse[20 + i*34],"\t%d - 0x%08X, %5dmV/%4dmA %s\n", i, (unsigned int)pPDO[i], (int)mV, (int)mA, mV==cmV? "*":" ");
+				}
+			}
+				break;
+
+			case CMD_MID:
+			{
+				union serial_type {
+				uint8_t bytes[12];
+				uint32_t raw[3];};
+
+				union serial_type mcuid;
+				mcuid.raw[0] = *(uint32_t*)Device1_Identifier;
+				mcuid.raw[1] = *(uint32_t*)Device2_Identifier;
+				mcuid.raw[2] = *(uint32_t*)Device3_Identifier;
+				sprintf(&testResponse[0], "\tMCU ID = ");
+				for (int8_t i=0; i<12; i++)
+				{
+					sprintf(&testResponse[10+i*3], "%02X ", (unsigned int)mcuid.bytes[11-i]);
 				}
 			}
 				break;

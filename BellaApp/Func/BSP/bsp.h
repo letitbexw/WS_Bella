@@ -15,6 +15,11 @@
 
 #define HW_REV_V1    1
 
+// access to device unique id
+#define Device1_Identifier 	(0x1FFF7590)
+#define Device2_Identifier 	(0x1FFF7594)
+#define Device3_Identifier 	(0x1FFF7598)
+
 #define BTN_OK				GPIOB, GPIO_PIN_14
 #define LED_RGB				GPIOA, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6
 #define LED_RED				GPIOA, GPIO_PIN_4

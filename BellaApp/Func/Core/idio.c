@@ -26,11 +26,6 @@ typedef struct _IDIO_IF_DATA
 /* Private macro -------------------------------------------------------------*/
 //#define CNFG_DEBUG_IDIO_COMMANDS
 
-// access to device unique id
-#define         Device1_Identifier          (0x1FFF7590)
-#define         Device2_Identifier          (0x1FFF7594)
-#define         Device3_Identifier          (0x1FFF7598)
-
 /* Private variables ---------------------------------------------------------*/
 static const uint8_t accessoryInfoStringsManufacturer[] = CNFG_ACCESSORY_MANUFACTURER;
 static const uint8_t accessoryInfoStringsModel[] 		= CNFG_ACCESSORY_MODEL_NUMBER;
