@@ -479,7 +479,7 @@ uint8_t setOrionState(orionState_t newState)
 			case orionStateProvProvider:
 			{
 				setOrionPull(orionLinePullUp);
-				setOrionPower(orionPower, true);		// XW
+				setOrionPower(orionPower, false);		// XW
 
 				mainSetEvents(orionSwapInProgress ? MAIN_EVENT_AID_RESUME : MAIN_EVENT_AID_CONNECT);
 				orionSwapInProgress = false;

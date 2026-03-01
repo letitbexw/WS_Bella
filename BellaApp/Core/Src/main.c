@@ -117,7 +117,7 @@ int main(void)
 	idioInit();
 	orionInit();
 	setOrionMode(orionModeAccessory);
-	setOrionPowerSource(orionPowerSourceNone);
+	setOrionPowerSource(orionPowerSourceNone);		// XW this is reduntant
 	bspSetOrionThreshold(bspOrionThreshMed);
 	aidpdSetSinkCapability(USB_REQ_USB_NOSUSPEND | USB_REQ_OP_CURRENT(50) | USB_REQ_MINMAX_CURRENT(100));
 	aidpdSetSourceCapability(PDO_VSAFE5V_SRC, 0);		// Add 5V PDO
