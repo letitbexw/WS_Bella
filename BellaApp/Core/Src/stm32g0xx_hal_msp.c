@@ -83,7 +83,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
 		if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) { Error_Handler(); }
 
 		__HAL_RCC_GPIOB_CLK_ENABLE();
-		initGPIO(GPIOB, GPIO_PIN_6|GPIO_PIN_7, GPIO_MODE_AF_OD, GPIO_NOPULL, 0, GPIO_AF6_I2C1);	/* PB6/PB7, I2C1_SCL/I2C1_SDA */
+		initGPIO(GPIOB, GPIO_PIN_8|GPIO_PIN_9, GPIO_MODE_AF_OD, GPIO_NOPULL, 0, GPIO_AF6_I2C1);	/* PB8/PB9, I2C1_SCL/I2C1_SDA */
 		/* Peripheral clock enable */
 		__HAL_RCC_I2C1_CLK_ENABLE();
 	}
@@ -95,7 +95,7 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
 	{
 		/* Peripheral clock disable */
 		__HAL_RCC_I2C1_CLK_DISABLE();
-		HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6|GPIO_PIN_7);
+		HAL_GPIO_DeInit(GPIOB, GPIO_PIN_8|GPIO_PIN_9);
 	}
 }
 
@@ -119,14 +119,14 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 
 void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 {
-	if(huart->Instance==USART3) 		{ idbusMspInit(); }
-	else if(huart->Instance==USART4) 	{ uartDebugMspInit(); }
+	if(huart->Instance==ORION_UART_BASE_PTR) 		{ idbusMspInit(); }
+	else if(huart->Instance==DEBUG_UART_BASE_PTR) 	{ uartDebugMspInit(); }
 }
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 {
-	if(huart->Instance==USART3)			{ idbusMspDeInit(); }
-	else if(huart->Instance==USART4) 	{ uartDebugMspDeInit(); }
+	if(huart->Instance==ORION_UART_BASE_PTR)		{ idbusMspDeInit(); }
+	else if(huart->Instance==DEBUG_UART_BASE_PTR) 	{ uartDebugMspDeInit(); }
 }
 
 

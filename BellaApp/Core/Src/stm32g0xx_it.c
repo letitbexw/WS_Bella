@@ -52,9 +52,13 @@ void SysTick_Handler(void)
 /* please refer to the startup file (startup_stm32g0xx.s).                    */
 /******************************************************************************/
 
-void USART3_4_5_6_LPUART1_IRQHandler(void)
+void USART1_IRQHandler(void)
 {
 	idbusUartIrqHandler(&idbusUartHandle);
+}
+
+void USART3_4_5_6_LPUART1_IRQHandler(void)
+{
 	HAL_UART_IRQHandler(&huartDbg);
 }
 
